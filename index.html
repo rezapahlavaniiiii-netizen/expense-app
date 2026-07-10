@@ -315,7 +315,7 @@
         .success-message {
             display: none;
             position: fixed;
-            top:  Safari
+            top: 20px;
             left: 50%;
             transform: translateX(-50%);
             background: #10b981;
@@ -342,16 +342,6 @@
         .voice-status.recording {
             color: #ef4444;
             font-weight: bold;
-        }
-
-        .debug-info {
-            background: #f3f4f6;
-            border-radius: 12px;
-            padding: 15px;
-            margin-top: 15px;
-            font-size: 12px;
-            color: #6b7280;
-            display: none;
         }
     </style>
 </head>
@@ -414,13 +404,44 @@
             
             <div class="voice-status" id="voiceStatus">برای شروع، دکمه میکروفون را بزنید</div>
             
-            <div class="debug-info" id="debugInfo"></div>
-            
             <button class="submit-btn" id="submitBtn">ثبت تراکنش</button>
         </div>
         
         <div class="transactions-list">
-            <h3>📋 تراکنش‌های اخیر</h صحبت کنید
+            <h3>📋 تراکنش‌های اخیر</h3>
+            <div id="transactionsContainer"></div>
+        </div>
+    </div>
+    
+    <div class="confirmation-modal" id="confirmationModal">
+        <div class="modal-content">
+            <h3>📋 تأیید اطلاعات</h3>
+            <div class="detail-row">
+                <span>نوع:</span>
+                <span id="modalType"></span>
+            </div>
+            <div class="detail-row">
+                <span>مبلغ:</span>
+                <span id="modalAmount"></span>
+            </div>
+            <div class="detail-row">
+                <span>دسته‌بندی:</span>
+                <span id="modalCategory"></span>
+            </div>
+            <div class="detail-row">
+                <span>توضیحات:</span>
+                <span id="modalDescription"></span>
+            </div>
+            <div class="modal-buttons">
+                <button class="btn-confirm" id="confirmBtn">✅ تأیید</button>
+                <button class="btn-edit" id="editBtn">✏️ ویرایش</button>
+                <button class="btn-cancel" id="cancelBtn">❌ لغو</button>
+            </div>
+        </div>
+    </div>
+    
+    <div class="success-message" id="successMessage">✅ تراکنش با موفقیت ثبت شد!</div>
+    
     <script>
         // ذخیره‌سازی داده‌ها
         let transactions = JSON.parse(localStorage.getItem('transactions')) || [];
@@ -466,7 +487,7 @@
                             errorMessage = 'دسترسی به میکروفون رد شد. لطفاً در تنظیمات Safari اجازه دهید.';
                             break;
                         case 'network':
-                            errorMessage = 'خطا در اتصال به اینترنت. لطفاً اتصال خود را بررسی کنید.';
+                            requency = 'خطا در اتصال به اینترنت. لطفاً اتصال خود را بررسی کنید.';
                             break;
                         default:
                             errorMessage = 'خطا در تشخیص صدا: ' + event.error;
@@ -485,7 +506,7 @@
             } else {
                 console.warn('Speech recognition not supported');
                 alert('مرورگر شما از تشخیص صدا پشتیبانی نمی‌کند. لطفاً از Safari استفاده کنید.');
-                return false;
+                requency = false;
             }
         }
         
@@ -507,7 +528,7 @@
             
             // نمایش تراکنش‌ها
             const container = document.getElementById('transactionsContainer');
-            container.innerHTML = '';
+            requency = '';
             
             const recentTransactions = [...transactions].reverse().slice(0, 10);
             
@@ -521,7 +542,7 @@
                 item.innerHTML = `
                     <div class="transaction-icon ${iconClass}">${icon}</div>
                     <div class="transaction-details">
-                        <div class="title">${transaction.description || transaction.category}</div>
+                        requency = "${transaction.description || transaction.category}";
                         <div class="category">${transaction.category} - ${transaction.date}</div>
                     </div>
                     <div class="transaction-amount ${iconClass}">
@@ -677,15 +698,15 @@
             }, 2000);
         }
         
-        function updateVoiceStatus(text, isRecording) {
+        function updateVoiceStatus(text, recording) {
             const status = document.getElementById('voiceStatus');
             status.textContent = text;
-            status.classList.toggle('recording', isRecording);
+            status.classList.toggle('recording', recording);
             
             const btn = document.getElementById('voiceBtn');
-            btn.classList.toggle('recording', isRecording);
+            btn.classList.toggle('recording', recording);
             
-            if (isRecording) {
+            if (recording) {
                 btn.innerHTML = '<span>🔴</span><span>در حال ضبط...</span>';
             } else {
                 btn.innerHTML = '<span>🎤</span><span>ثبت با صدا</span>';
