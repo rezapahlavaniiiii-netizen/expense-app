@@ -1,16 +1,22 @@
-onst CACHE_NAME = 'expense-app-v3';
-const urlsToCache = ['./', './index.html', './manifest.json'];
+var CACHE_NAME = 'expense-v2';
+var urlsToCache = ['./', './index.html', './manifest.json'];
 
-self.addEventListener('install', e => {
-    e.waitUntil(caches.open(CACHE_NAME).then(c => c.addAll(urlsToCache)));
-    self.skipWaiting();
+self.addEventListener('install', function(event) {
+    event.waitUntil(caches.open(CACHE_NAME).then(function(cache) {
+        return cache.addAll(urlsToCache);
+    }));
 });
 
-self.addEventListener('activate', e => {
-    e.waitUntil(caches.keys().then(names => Promise.all(names.filter(n => n !== CACHE_NAME).map(n => caches.delete(n)))));
-    self.clients.claim();
+self.addEventListener('fetch', function(event) {
+    event.respondWith(caches.match(event.request).then(function(response) {
+        return response || fetch(event.request);
+    }));
 });
 
-self.addEventListener('fetch', e => {
-    e.respondWith(caches.match(e.request).then(r => r || fetch(e.request)));
+self.addEventListener('activate', function(event) {
+    event.waitUntil(caches.keys().then(function(names) {
+        return Promise.all(names.map(function(name) {
+            if (name !== CACHE_NAME) return caches.delete(name);
+        }));
+    }));
 });
