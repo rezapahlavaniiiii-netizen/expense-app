@@ -1,0 +1,742 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>مدیریت هزینه هوشمند</title>
+    <link rel="manifest" href="manifest.json">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="مدیریت هزینه">
+    <link rel="apple-touch-icon" href="icon-192.png">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+            padding-bottom: 100px;
+        }
+        
+        .container {
+            max-width: 500px;
+            margin: 0 auto;
+        }
+        
+        header {
+            text-align: center;
+            color: white;
+            margin-bottom: 30px;
+        }
+        
+        header h1 {
+            font-size: 28px;
+            margin-bottom: 10px;
+        }
+        
+        .balance-card {
+            background: rgba(255,255,255,0.2);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 25px;
+            text-align: center;
+            color: white;
+            margin-bottom: 25px;
+        }
+        
+        .balance-card h2 {
+            font-size: 16px;
+            opacity: 0.9;
+        }
+        
+        .balance-card .amount {
+            font-size: 42px;
+            font-weight: bold;
+            margin: 10px 0;
+        }
+        
+        .balance-card .summary {
+            display: flex;
+            justify-content: space-around;
+            margin-top: 15px;
+        }
+        
+        .summary-item {
+            text-align: center;
+        }
+        
+        .summary-item .label {
+            font-size: 12px;
+            opacity: 0.8;
+        }
+        
+        .summary-item .value {
+            font-size: 18px;
+            font-weight: bold;
+        }
+        
+        .income { color: #4ade80; }
+        .expense { color: #f87171; }
+        
+        .input-section {
+            background: white;
+            border-radius: 20px;
+            padding: 25px;
+            margin-bottom: 25px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+        
+        .tabs {
+            display: flex;
+            margin-bottom: 20px;
+            background: #f3f4f6;
+            border-radius: 12px;
+            padding: 4px;
+        }
+        
+        .tab {
+            flex: 1;
+            padding: 12px;
+            text-align: center;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-weight: 500;
+        }
+        
+        .tab.active {
+            background: #667eea;
+            color: white;
+        }
+        
+        .form-group {
+            margin-bottom: 15px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: #374151;
+            font-weight: 500;
+        }
+        
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 14px;
+            border: 2px solid #e5e7eb;
+            border-radius: 12px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+        
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        
+        .voice-btn {
+            width: 100%;
+            padding: 18px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 15px;
+            font-size: 18px;
+            font-weight: bold;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            transition: transform 0.2s;
+        }
+        
+        .voice-btn:active {
+            transform: scale(0.98);
+        }
+        
+        .voice-btn.recording {
+            animation: pulse 1.5s infinite;
+            background: linear-gradient(135deg, #f87171 0%, #ef4444 100%);
+        }
+        
+        @keyframes pulse {
+            0% { box-shadow: 0 0 0 0 rgba(248,113,113,0.7); }
+            70% { box-shadow: 0 0 0 15px rgba(248,113,113,0); }
+            100% { box-shadow: 0 0 0 0 rgba(248,113,113,0); }
+        }
+        
+        .submit-btn {
+            width: 100%;
+            padding: 16px;
+            background: #10b981;
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+        
+        .transactions-list {
+            background: white;
+            border-radius: 20px;
+            padding: 25px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+        
+        .transactions-list h3 {
+            margin-bottom: 20px;
+            color: #374151;
+        }
+        
+        .transaction-item {
+            display: flex;
+            align-items: center;
+            padding: 15px;
+            border-bottom: 1px solid #f3f4f6;
+        }
+        
+        .transaction-item:last-child {
+            border-bottom: none;
+        }
+        
+        .transaction-icon {
+            width: 50px;
+            height: 50px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            margin-left: 15px;
+        }
+        
+        .transaction-details {
+            flex: 1;
+        }
+        
+        .transaction-details .title {
+            font-weight: 600;
+            color: #374151;
+        }
+        
+        .transaction-details .category {
+            font-size: 13px;
+            color: #9ca3af;
+        }
+        
+        .transaction-amount {
+            font-weight: bold;
+            font-size: 16px;
+        }
+        
+        .confirmation-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.5);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        
+        .modal-content {
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            width: 100%;
+            max-width: 400px;
+        }
+        
+        .modal-content h3 {
+            text-align: center;
+            margin-bottom: 20px;
+            color: #374151;
+        }
+        
+        .modal-content .detail-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px 0;
+            border-bottom: 1px solid #f3f4f6;
+        }
+        
+        .modal-content .detail-row:last-of-type {
+            border-bottom: none;
+        }
+        
+        .modal-buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+        
+        .modal-buttons button {
+            flex: 1;
+            padding: 14px;
+            border: none;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        
+        .btn-confirm {
+            background: #10b981;
+            color: white;
+        }
+        
+        .btn-edit {
+            background: #f59e0b;
+            color: white;
+        }
+        
+        .btn-cancel {
+            background: #ef4444;
+            color: white;
+        }
+        
+        .success-message {
+            display: none;
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #10b981;
+            color: white;
+            padding: 15px 30px;
+            border-radius: 12px;
+            font-weight: bold;
+            z-index: 1001;
+            animation: slideDown 0.5s;
+        }
+        
+        @keyframes slideDown {
+            from { top: -100px; opacity: 0; }
+            to { top: 20px; opacity: 1; }
+        }
+        
+        .voice-status {
+            text-align: center;
+            padding: 15px;
+            color: #6b7280;
+            font-size: 14px;
+        }
+        
+        .voice-status.recording {
+            color: #ef4444;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>💰 مدیریت هزینه هوشمند</h1>
+            <p>با صدای خود هزینه‌ها را مدیریت کنید</p>
+        </header>
+        
+        <div class="balance-card">
+            <h2>موجودی کل</h2>
+            <div class="amount" id="totalBalance">0 تومان</div>
+            <div class="summary">
+                <div class="summary-item">
+                    <div class="label">درآمد</div>
+                    <div class="value income" id="totalIncome">0</div>
+                </div>
+                <div class="summary-item">
+                    <div class="label">هزینه</div>
+                    <div class="value expense" id="totalExpense">0</div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="input-section">
+            <div class="tabs">
+                <div class="tab active" data-type="expense">💸 هزینه</div>
+                <div class="tab" data-type="income">💰 درآمد</div>
+            </div>
+            
+            <div class="form-group">
+                <label>💰 مبلغ (تومان)</label>
+                <input type="number" id="amount" placeholder="مثال: 50000">
+            </div>
+            
+            <div class="form-group">
+                <label>📂 دسته‌بندی</label>
+                <select id="category">
+                    <option value="خوراک">🍽️ خوراک</option>
+                    <option value="حمل‌ونقل">🚗 حمل‌ونقل</option>
+                    <option value="مسکن">🏠 مسکن</option>
+                    <option value="پوشاک">👕 پوشاک</option>
+                    <option value="تفریح">🎭 تفریح</option>
+                    <option value="سلامت">💊 سلامت</option>
+                    <option value="آموزش">📚 آموزش</option>
+                    <option value="سایر">📦 سایر</option>
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <label>📝 توضیحات</label>
+                <textarea id="description" placeholder="توضیحات تراکنش..." rows="2"></textarea>
+            </div>
+            
+            <button class="voice-btn" id="voiceBtn">
+                <span>🎤</span>
+                <span>ثبت با صدا</span>
+            </button>
+            
+            <div class="voice-status" id="voiceStatus">برای شروع، دکمه میکروفون را بزنید</div>
+            
+            <button class="submit-btn" id="submitBtn">ثبت تراکنش</button>
+        </div>
+        
+        <div class="transactions-list">
+            <h3>📋 تراکنش‌های اخیر</h3>
+            <div id="transactionsContainer"></div>
+        </div>
+    </div>
+    
+    <div class="confirmation-modal" id="confirmationModal">
+        <div class="modal-content">
+            <h3>📋 تأیید اطلاعات</h3>
+            <div class="detail-row">
+                <span>نوع:</span>
+                <span id="modalType"></span>
+            </div>
+            <div class="detail-row">
+                <span>مبلغ:</span>
+                <span id="modalAmount"></span>
+            </div>
+            <div class="detail-row">
+                <span>دسته‌بندی:</span>
+                <span id="modalCategory"></span>
+            </div>
+            <div class="detail-row">
+                <span>توضیحات:</span>
+                <span id="modalDescription"></span>
+            </div>
+            <div class="modal-buttons">
+                <button class="btn-confirm" id="confirmBtn">✅ تأیید</button>
+                <button class="btn-edit" id="editBtn">✏️ ویرایش</button>
+                <button class="btn-cancel" id="cancelBtn">❌ لغو</button>
+            </div>
+        </div>
+    </div>
+    
+    <div class="success-message" id="successMessage">✅ تراکنش با موفقیت ثبت شد!</div>
+    
+    <script>
+        // ذخیره‌سازی داده‌ها
+        let transactions = JSON.parse(localStorage.getItem('transactions')) || [];
+        let currentType = 'expense';
+        let isRecording = false;
+        let recognition = null;
+        
+        // تنظیمات تشخیص صدا
+        if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
+            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+            recognition = new SpeechRecognition();
+            recognition.lang = 'fa-IR';
+            recognition.continuous = false;
+            recognition.interimResults = false;
+            
+            recognition.onresult = function(event) {
+                const transcript = event.results[0][0].transcript;
+                processVoiceInput(transcript);
+                stopRecording();
+            };
+            
+            recognition.onerror = function(event) {
+                console.error('Speech recognition error:', event.error);
+                stopRecording();
+                alert('خطا در تشخیص صدا. لطفاً دوباره تلاش کنید.');
+            };
+            
+            recognition.onend = function() {
+                stopRecording();
+            };
+        }
+        
+        // توابع اصلی
+        function saveTransactions() {
+            localStorage.setItem('transactions', JSON.stringify(transactions));
+            updateUI();
+        }
+        
+        function updateUI() {
+            // محاسبه موجودی
+            const income = transactions.filter(t => t.type === 'income').reduce((sum, t) => sum + t.amount, 0);
+            const expense = transactions.filter(t => t.type === 'expense').reduce((sum, t) => sum + t.amount, 0);
+            const balance = income - expense;
+            
+            document.getElementById('totalBalance').textContent = formatNumber(balance) + ' تومان';
+            document.getElementById('totalIncome').textContent = formatNumber(income);
+            document.getElementById('totalExpense').textContent = formatNumber(expense);
+            
+            // نمایش تراکنش‌ها
+            const container = document.getElementById('transactionsContainer');
+            container.innerHTML = '';
+            
+            const recentTransactions = [...transactions].reverse().slice(0, 10);
+            
+            recentTransactions.forEach(transaction => {
+                const item = document.createElement('div');
+                item.className = 'transaction-item';
+                
+                const iconClass = transaction.type === 'income' ? 'income' : 'expense';
+                const icon = getCategoryIcon(transaction.category);
+                
+                item.innerHTML = `
+                    <div class="transaction-icon ${iconClass}">${icon}</div>
+                    <div class="transaction-details">
+                        <div class="title">${transaction.description || transaction.category}</div>
+                        <div class="category">${transaction.category} - ${transaction.date}</div>
+                    </div>
+                    <div class="transaction-amount ${iconClass}">
+                        ${transaction.type === 'income' ? '+' : '-'}${formatNumber(transaction.amount)}
+                    </div>
+                `;
+                
+                container.appendChild(item);
+            });
+        }
+        
+        function getCategoryIcon(category) {
+            const icons = {
+                'خوراک': '🍽️',
+                'حمل‌ونقل': '🚗',
+                'مسکن': '🏠',
+                'پوشاک': '👕',
+                'تفریح': '🎭',
+                'سلامت': '💊',
+                'آموزش': '📚',
+                'سایر': '📦',
+                'حقوق': '💼',
+                'فروش': '🏷️',
+                'هدیه': '🎁',
+                'سود': '📈'
+            };
+            return icons[category] || '📦';
+        }
+        
+        function formatNumber(num) {
+            return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+        }
+        
+        function processVoiceInput(text) {
+            // استخراج مبلغ
+            const amountMatch = text.match(/(\d+)\s*(هزار|میلیون)?\s*(تومان|تومن|ریال)?/);
+            let amount = 0;
+            
+            if (amountMatch) {
+                amount = parseInt(amountMatch[1]);
+                if (amountMatch[2] === 'هزار') amount *= 1000;
+                if (amountMatch[2] === 'میلیون') amount *= 1000000;
+                if (amountMatch[3] === 'ریال') amount /= 10;
+            }
+            
+            // تشخیص نوع
+            const incomeKeywords = ['دریافت', 'گرفتم', 'حقوق', 'فروش', 'هدیه', 'پاداش', 'سود'];
+            const expenseKeywords = ['پرداخت', 'خرجم', 'دادم', 'خریدم', 'هزینه', 'خرج'];
+            
+            let type = 'expense';
+            if (incomeKeywords.some(keyword => text.includes(keyword))) {
+                type = 'income';
+            }
+            
+            // تشخیص دسته‌بندی
+            const categories = {
+                'خوراک': ['ناهار', 'شام', 'صبحانه', 'رستوران', 'غذا', 'خرید', 'میوه', 'سبزی', 'نان'],
+                'حمل‌ونقل': ['بنزین', 'تاکسی', 'اتوبوس', 'مترو', 'پارکینگ', 'کرایه', 'ماشین', 'اسنپ'],
+                'مسکن': ['اجاره', 'قبض', 'برق', 'آب', 'گاز', 'تلفن', 'اینترنت', 'تعمیر'],
+                'پوشاک': ['لباس', 'کفش', 'شلوار', 'پیراهن', 'جوراب', 'کیف'],
+                'تفریح': ['سینما', 'تئاتر', 'مسافرت', 'گردش', 'پارک', 'بازی'],
+                'سلامت': ['دارو', 'دکتر', 'بیمارستان', 'آزمایش', 'دندانپزشک'],
+                'آموزش': ['کتاب', 'کلاس', 'دوره', 'دانشگاه', 'مدرسه']
+            };
+            
+            let category = 'سایر';
+            for (const [cat, keywords] of Object.entries(categories)) {
+                if (keywords.some(keyword => text.includes(keyword))) {
+                    category = cat;
+                    break;
+                }
+            }
+            
+            // پر کردن فرم
+            document.getElementById('amount').value = amount;
+            document.getElementById('description').value = text;
+            
+            // تنظیم نوع
+            currentType = type;
+            document.querySelectorAll('.tab').forEach(tab => {
+                tab.classList.remove('active');
+                if (tab.dataset.type === type) {
+                    tab.classList.add('active');
+                }
+            });
+            
+            // تنظیم دسته‌بندی
+            document.getElementById('category').value = category;
+            
+            // نمایش مودال تأیید
+            showConfirmationModal();
+        }
+        
+        function showConfirmationModal() {
+            const amount = document.getElementById('amount').value;
+            const category = document.getElementById('category').value;
+            const description = document.getElementById('description').value;
+            
+            if (!amount) {
+                alert('لطفاً مبلغ را وارد کنید');
+                return;
+            }
+            
+            document.getElementById('modalType').textContent = currentType === 'income' ? '💰 درآمد' : '💸 هزینه';
+            document.getElementById('modalAmount').textContent = formatNumber(amount) + ' تومان';
+            document.getElementById('modalCategory').textContent = category;
+            document.getElementById('modalDescription').textContent = description || '-';
+            
+            document.getElementById('confirmationModal').style.display = 'flex';
+        }
+        
+        function hideConfirmationModal() {
+            document.getElementById('confirmationModal').style.display = 'none';
+        }
+        
+        function addTransaction() {
+            const amount = parseInt(document.getElementById('amount').value);
+            const category = document.getElementById('category').value;
+            const description = document.getElementById('description').value;
+            
+            if (!amount || amount <= 0) {
+                alert('لطفاً مبلغ معتبر وارد کنید');
+                return;
+            }
+            
+            const transaction = {
+                id: Date.now(),
+                type: currentType,
+                amount: amount,
+                category: category,
+                description: description,
+                date: new Date().toLocaleDateString('fa-IR')
+            };
+            
+            transactions.push(transaction);
+            saveTransactions();
+            
+            // پاک کردن فرم
+            document.getElementById('amount').value = '';
+            document.getElementById('description').value = '';
+            
+            // نمایش پیام موفقیت
+            showSuccessMessage();
+        }
+        
+        function showSuccessMessage() {
+            const message = document.getElementById('successMessage');
+            message.style.display = 'block';
+            setTimeout(() => {
+                message.style.display = 'none';
+            }, 2000);
+        }
+        
+        function startRecording() {
+            if (!recognition) {
+                alert('مرورگر شما از تشخیص صدا پشتیبانی نمی‌کند');
+                return;
+            }
+            
+            isRecording = true;
+            document.getElementById('voiceBtn').classList.add('recording');
+            document.getElementById('voiceStatus').textContent = '🔴 در حال ضبط... صحبت کنید';
+            document.getElementById('voiceStatus').classList.add('recording');
+            
+            recognition.start();
+        }
+        
+        function stopRecording() {
+            isRecording = false;
+            document.getElementById('voiceBtn').classList.remove('recording');
+            document.getElementById('voiceStatus').textContent = 'برای شروع، دکمه میکروفون را بزنید';
+            document.getElementById('voiceStatus').classList.remove('recording');
+        }
+        
+        // رویدادها
+        document.querySelectorAll('.tab').forEach(tab => {
+            tab.addEventListener('click', function() {
+                document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+                this.classList.add('active');
+                currentType = this.dataset.type;
+                
+                // تغییر دسته‌بندی‌ها بر اساس نوع
+                const categorySelect = document.getElementById('category');
+                if (currentType === 'income') {
+                    categorySelect.innerHTML = `
+                        <option value="حقوق">💼 حقوق</option>
+                        <option value="فروش">🏷️ فروش</option>
+                        <option value="هدیه">🎁 هدیه</option>
+                        <option value="سود">📈 سود</option>
+                        <option value="سایر">📦 سایر</option>
+                    `;
+                } else {
+                    categorySelect.innerHTML = `
+                        <option value="خوراک">🍽️ خوراک</option>
+                        <option value="حمل‌ونقل">🚗 حمل‌ونقل</option>
+                        <option value="مسکن">🏠 مسکن</option>
+                        <option value="پوشاک">👕 پوشاک</option>
+                        <option value="تفریح">🎭 تفریح</option>
+                        <option value="سلامت">💊 سلامت</option>
+                        <option value="آموزش">📚 آموزش</option>
+                        <option value="سایر">📦 سایر</option>
+                    `;
+                }
+            });
+        });
+        
+        document.getElementById('voiceBtn').addEventListener('click', function() {
+            if (isRecording) {
+                recognition.stop();
+                stopRecording();
+            } else {
+                startRecording();
+            }
+        });
+        
+        document.getElementById('submitBtn').addEventListener('click', showConfirmationModal);
+        
+        document.getElementById('confirmBtn').addEventListener('click', function() {
+            hideConfirmationModal();
+            addTransaction();
+        });
+        
+        document.getElementById('editBtn').addEventListener('click', function() {
+            hideConfirmationModal();
+        });
+        
+        document.getElementById('cancelBtn').addEventListener('click', hideConfirmationModal);
+        
+        // بارگذاری اولیه
+        updateUI();
+    </script>
+</body>
+</html>
