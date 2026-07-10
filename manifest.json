@@ -1,11 +1,12 @@
 {
-    "name": "مدیریت مالی حرفه‌ای",
-    "short_name": "مالی",
+    "name": "مدیریت هزینه هوشمند",
+    "short_name": "هزینه",
     "start_url": "./index.html",
     "display": "standalone",
     "background_color": "#667eea",
     "theme_color": "#667eea",
     "orientation": "portrait",
+    "description": "اپلیکیشن حرفه‌ای مدیریت هزینه",
     "icons": [
         {
             "src": "icon-192.png",
