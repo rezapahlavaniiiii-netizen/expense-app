@@ -1,278 +1,181 @@
-<!-- صفحه خانه -->
-    <div class="page active" id="page-home">
-        <div class="card">
-            <div class="tabs">
-                <div class="tab active" data-type="expense">💸 هزینه</div>
-                <div class="tab" data-type="income">💰 درآمد</div>
-            </div>
-            <div class="form-group"><label>💰 مبلغ (تومان)</label><input type="number" id="amount" placeholder="مثال: 50000"></div>
-            <div class="form-group"><label>📂 دسته‌بندی</label><select id="category">
-                <option value="خوراک">🍽️ خوراک</option><option value="حمل‌ونقل">🚗 حمل‌ونقل</option>
-                <option value="مسکن">🏠 مسکن</option><option value="پوشاک">👕 پوشاک</option>
-                <option value="تفریح">🎭 تفریح</option><option value="سلامت">💊 سلامت</option>
-                <option value="آموزش">📚 آموزش</option><option value="سایر">📦 سایر</option>
-            </select></div>
-            <div class="form-group"><label>📝 توضیحات</label><textarea id="description" placeholder="توضیحات..." rows="2"></textarea></div>
-            <button class="permission-btn" id="permissionBtn">🎤 اجازه دسترسی به میکروفون</button>
-            <button class="voice-btn" id="voiceBtn"><span>🎤</span><span>ثبت با صدا</span></button>
-            <div class="voice-status" id="voiceStatus">برای شروع، دکمه میکروفون را بزنید</div>
-            <button class="submit-btn" id="submitBtn">✅ ثبت تراکنش</button>
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>مدیریت هزینه هوشمند</title>
+    <link rel="manifest" href="manifest.json">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="مدیریت هزینه">
+    <meta name="theme-color" content="#667eea">
+    <link rel="apple-touch-icon" href="icon-192.png">
+    <style>
+        *{margin:0;padding:0;box-sizing:border-box;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif}
+        body{background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);min-height:100vh;padding:16px;padding-bottom:90px}
+        .container{max-width:500px;margin:0 auto}
+        header{text-align:center;color:white;margin-bottom:24px}
+        header h1{font-size:24px;margin-bottom:6px}
+        header p{font-size:13px;opacity:.8}
+        .balance-card{background:rgba(255,255,255,.2);backdrop-filter:blur(10px);border-radius:20px;padding:24px;text-align:center;color:white;margin-bottom:20px}
+        .balance-card h2{font-size:14px;opacity:.85}
+        .balance-card .amount{font-size:36px;font-weight:800;margin:8px 0}
+        .balance-card .summary{display:flex;justify-content:space-around;margin-top:14px}
+        .summary-item{text-align:center}
+        .summary-item .label{font-size:11px;opacity:.75}
+        .summary-item .value{font-size:17px;font-weight:700}
+        .income{color:#4ade80}.expense{color:#f87171}
+        .nav-tabs{display:flex;background:rgba(255,255,255,.2);border-radius:14px;padding:4px;margin-bottom:18px}
+        .nav-tab{flex:1;padding:11px;text-align:center;border-radius:11px;cursor:pointer;transition:.3s;color:white;font-weight:600;font-size:13px}
+        .nav-tab.active{background:white;color:#667eea}
+        .page{display:none}.page.active{display:block}
+        .card{background:white;border-radius:20px;padding:22px;margin-bottom:18px;box-shadow:0 8px 24px rgba(0,0,0,.15)}
+        .tabs{display:flex;background:#f3f4f6;border-radius:11px;padding:3px;margin-bottom:18px}
+        .tab{flex:1;padding:11px;text-align:center;border-radius:9px;cursor:pointer;transition:.3s;font-weight:600;font-size:13px}
+        .tab.active{background:#667eea;color:white}
+        .form-group{margin-bottom:14px}
+        .form-group label{display:block;margin-bottom:7px;color:#374151;font-weight:600;font-size:13px}
+        .form-group input,.form-group select,.form-group textarea{width:100%;padding:13px;border:2px solid #e5e7eb;border-radius:11px;font-size:15px;transition:.3s}
+        .form-group input:focus,.form-group select:focus,.form-group textarea:focus{outline:none;border-color:#667eea}
+        .voice-btn{width:100%;padding:16px;background:linear-gradient(135deg,#667eea,#764ba2);color:white;border:none;border-radius:14px;font-size:16px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;transition:.2s}
+        .voice-btn:active{transform:scale(.97)}
+        .voice-btn.recording{animation:pulse 1.5s infinite;background:linear-gradient(135deg,#f87171,#ef4444)}
+        @keyframes pulse{0%{box-shadow:0 0 0 0 rgba(248,113,113,.7)}70%{box-shadow:0 0 0 14px rgba(248,113,113,0)}100%{box-shadow:0 0 0 0 rgba(248,113,113,0)}}
+        .submit-btn{width:100%;padding:14px;background:#10b981;color:white;border:none;border-radius:11px;font-size:15px;font-weight:700;cursor:pointer;margin-top:8px}
+        .permission-btn{width:100%;padding:11px;background:#f59e0b;color:white;border:none;border-radius:11px;font-size:13px;font-weight:700;cursor:pointer;margin-bottom:12px;display:none}
+        .voice-status{text-align:center;padding:10px;color:#6b7280;font-size:13px}
+        .transaction-item{display:flex;align-items:center;padding:13px;border-bottom:1px solid #f3f4f6}
+        .transaction-item:last-child{border-bottom:none}
+        .transaction-icon{width:46px;height:46px;border-radius:11px;display:flex;align-items:center;justify-content:center;font-size:22px;margin-left:12px}
+        .transaction-icon.inc{background:#dcfce7}.transaction-icon.exp{background:#fee2e2}
+        .transaction-details{flex:1}
+        .transaction-details .title{font-weight:600;color:#374151;font-size:14px}
+        .transaction-details .category{font-size:12px;color:#9ca3af}
+        .transaction-amount{font-weight:700;font-size:15px}
+        .delete-btn{background:#ef4444;color:white;border:none;border-radius:7px;padding:4px 8px;font-size:11px;cursor:pointer;margin-left:8px}
+        .report-section h3{margin-bottom:16px;color:#374151;font-size:15px;display:flex;align-items:center;gap:6px}
+        .report-tabs{display:flex;background:#f3f4f6;border-radius:11px;padding:3px;margin-bottom:16px}
+        .report-tab{flex:1;padding:9px;text-align:center;border-radius:9px;cursor:pointer;transition:.3s;font-weight:600;font-size:12px}
+        .report-tab.active{background:#667eea;color:white}
+        .report-card{background:#f9fafb;border-radius:14px;padding:16px;margin-bottom:12px}
+        .report-card .label{font-size:13px;color:#6b7280;margin-bottom:4px}
+        .report-card .value{font-size:22px;font-weight:800;color:#374151}
+        .chart-bar{display:flex;align-items:center;margin-bottom:10px}
+        .chart-label{width:75px;font-size:12px;color:#6b7280}
+        .chart-bar-container{flex:1;height:22px;background:#f3f4f6;border-radius:11px;overflow:hidden;margin:0 8px}
+        .chart-bar-fill{height:100%;border-radius:11px;transition:width .5s}
+        .chart-value{width:70px;text-align:left;font-size:12px;font-weight:700;color:#374151}
+        .top-expense-item{display:flex;align-items:center;padding:11px;background:#f9fafb;border-radius:11px;margin-bottom:8px}
+        .top-expense-rank{width:28px;height:28px;background:#667eea;color:white;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;margin-left:10px}
+        .top-expense-details{flex:1}
+        .top-expense-details .title{font-weight:600;color:#374151;font-size:13px}
+        .top-expense-details .cat{font-size:11px;color:#9ca3af}
+        .top-expense-amount{font-weight:700;color:#ef4444;font-size:13px}
+        .modal{display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.5);z-index:1000;align-items:center;justify-content:center;padding:16px}
+        .modal-content{background:white;border-radius:20px;padding:26px;width:100%;max-width:380px}
+        .modal-content h3{text-align:center;margin-bottom:18px;color:#374151}
+        .modal-content .detail-row{display:flex;justify-content:space-between;padding:9px 0;border-bottom:1px solid #f3f4f6}
+        .modal-content .detail-row:last-of-type{border-bottom:none}
+        .modal-buttons{display:flex;gap:8px;margin-top:16px}
+        .modal-buttons button{flex:1;padding:12px;border:none;border-radius:11px;font-size:14px;font-weight:700;cursor:pointer}
+        .btn-confirm{background:#10b981;color:white}.btn-edit{background:#f59e0b;color:white}.btn-cancel{background:#ef4444;color:white}
+        .success-msg{display:none;position:fixed;top:18px;left:50%;transform:translateX(-50%);background:#10b981;color:white;padding:13px 26px;border-radius:11px;font-weight:700;z-index:1001;animation:slideDown .5s}
+        @keyframes slideDown{from{top:-80px;opacity:0}to{top:18px;opacity:1}}
+        .export-btns{display:flex;gap:8px;margin-top:14px;flex-wrap:wrap}
+        .export-btn{flex:1;min-width:100px;padding:10px;border:2px solid #667eea;background:white;color:#667eea;border-radius:11px;font-size:13px;font-weight:700;cursor:pointer;text-align:center;transition:.3s}
+        .export-btn:hover{background:#667eea;color:white}
+        .date-filter{display:flex;gap:8px;margin-bottom:16px}
+        .date-filter input{flex:1;padding:10px;border:2px solid #e5e7eb;border-radius:11px;font-size:13px}
+        .date-filter input:focus{outline:none;border-color:#667eea}
+    </style>
+</head>
+<body>
+<div class="container">
+    <header><h1>💰 مدیریت هزینه هوشمند</h1><p>با صدای خود هزینه‌ها را مدیریت کنید</p></header>
+    <div class="balance-card">
+        <h2>موجودی کل</h2>
+        <div class="amount" id="totalBalance">۰ تومان</div>
+        <div class="summary">
+            <div class="summary-item"><div class="label">درآمد</div><div class="value income" id="totalIncome">۰</div></div>
+            <div class="summary-item"><div class="label">هزینه</div><div class="value expense" id="totalExpense">۰</div></div>
         </div>
     </div>
-
-    <!-- صفحه گزارش -->
+    <div class="nav-tabs">
+        <div class="nav-tab active" data-page="home">🏠 خانه</div>
+        <div class="nav-tab" data-page="report">📊 گزارش</div>
+        <div class="nav-tab" data-page="history">📋 تاریخچه</div>
+    </div>
+    <div class="page active" id="page-home"><div class="card">
+        <div class="tabs"><div class="tab active" data-type="expense">💸 هزینه</div><div class="tab" data-type="income">💰 درآمد</div></div>
+        <div class="form-group"><label>💰 مبلغ (تومان)</label><input type="number" id="amount" placeholder="مثال: 50000"></div>
+        <div class="form-group"><label>📂 دسته‌بندی</label><select id="category"><option value="خوراک">🍽️ خوراک</option><option value="حمل‌ونقل">🚗 حمل‌ونقل</option><option value="مسکن">🏠 مسکن</option><option value="پوشاک">👕 پوشاک</option><option value="تفریح">🎭 تفریح</option><option value="سلامت">💊 سلامت</option><option value="آموزش">📚 آموزش</option><option value="سایر">📦 سایر</option></select></div>
+        <div class="form-group"><label>📝 توضیحات</label><textarea id="description" placeholder="توضیحات..." rows="2"></textarea></div>
+        <button class="permission-btn" id="permissionBtn">🎤 اجازه دسترسی به میکروفون</button>
+        <button class="voice-btn" id="voiceBtn"><span>🎤</span><span>ثبت با صدا</span></button>
+        <div class="voice-status" id="voiceStatus">برای شروع، دکمه میکروفون را بزنید</div>
+        <button class="submit-btn" id="submitBtn">✅ ثبت تراکنش</button>
+    </div></div>
     <div class="page" id="page-report">
-        <div class="card report-section">
-            <h3>📅 فیلتر تاریخ</h3>
-            <div class="date-filter">
-                <input type="date" id="dateFrom">
-                <input type="date" id="dateTo">
-            </div>
-            <div class="report-tabs">
-                <div class="report-tab active" data-period="daily">روزانه</div>
-                <div class="report-tab" data-period="weekly">هفتگی</div>
-                <div class="report-tab" data-period="monthly">ماهانه</div>
-                <div class="report-tab" data-period="custom">سفارشی</div>
-            </div>
+        <div class="card report-section"><h3>📅 فیلتر تاریخ</h3>
+            <div class="date-filter"><input type="date" id="dateFrom"><input type="date" id="dateTo"></div>
+            <div class="report-tabs"><div class="report-tab active" data-period="daily">روزانه</div><div class="report-tab" data-period="weekly">هفتگی</div><div class="report-tab" data-period="monthly">ماهانه</div><div class="report-tab" data-period="custom">سفارشی</div></div>
             <div class="report-card"><div class="label">کل هزینه‌ها</div><div class="value expense" id="reportExpense">۰ تومان</div></div>
             <div class="report-card"><div class="label">کل درآمدها</div><div class="value income" id="reportIncome">۰ تومان</div></div>
             <div class="report-card"><div class="label">موجودی خالص</div><div class="value" id="reportBalance">۰ تومان</div></div>
             <div class="report-card"><div class="label">میانگین هزینه روزانه</div><div class="value expense" id="reportAvg">۰ تومان</div></div>
         </div>
-        <div class="card report-section">
-            <h3>📊 نمودار دسته‌بندی</h3>
-            <div id="categoryChart"></div>
-        </div>
-        <div class="card report-section">
-            <h3>🏆 پرهزینه‌ترین‌ها</h3>
-            <div id="topExpenses"></div>
-        </div>
-        <div class="card report-section">
-            <h3>📤 خروجی گرفتن</h3>
-            <div class="export-btns">
-                <button class="export-btn" onclick="exportCSV()">📄 CSV</button>
-                <button class="export-btn" onclick="exportJSON()">📋 JSON</button>
-                <button class="export-btn" onclick="printReport()">🖨️ چاپ</button>
-            </div>
+        <div class="card report-section"><h3>📊 نمودار دسته‌بندی</h3><div id="categoryChart"></div></div>
+        <div class="card report-section"><h3>🏆 پرهزینه‌ترین‌ها</h3><div id="topExpenses"></div></div>
+        <div class="card report-section"><h3>📤 خروجی گرفتن</h3>
+            <div class="export-btns"><button class="export-btn" onclick="exportCSV()">📄 CSV</button><button class="export-btn" onclick="exportJSON()">📋 JSON</button><button class="export-btn" onclick="printReport()">🖨️ چاپ</button></div>
         </div>
     </div>
-
-    <!-- صفحه تاریخچه -->
-    <div class="page" id="page-history">
-        <div class="card">
-            <h3 style="margin-bottom:16px;color:#374151">📋 تمام تراکنش‌ها</h3>
-            <div id="allTransactions"></div>
-        </div>
-    </div>
+    <div class="page" id="page-history"><div class="card"><h3 style="margin-bottom:16px;color:#374151">📋 تمام تراکنش‌ها</h3><div id="allTransactions"></div></div></div>
 </div>
-
-<div class="modal" id="confirmationModal">
-    <div class="modal-content">
-        <h3>📋 تأیید اطلاعات</h3>
-        <div class="detail-row"><span>نوع:</span><span id="modalType"></span></div>
-        <div class="detail-row"><span>مبلغ:</span><span id="modalAmount"></span></div>
-        <div class="detail-row"><span>دسته‌بندی:</span><span id="modalCategory"></span></div>
-        <div class="detail-row"><span>توضیحات:</span><span id="modalDescription"></span></div>
-        <div class="modal-buttons">
-            <button class="btn-confirm" id="confirmBtn">✅</button>
-            <button class="btn-edit" id="editBtn">✏️</button>
-            <button class="btn-cancel" id="cancelBtn">❌</button>
-        </div>
-    </div>
-</div>
+<div class="modal" id="confirmationModal"><div class="modal-content">
+    <h3>📋 تأیید اطلاعات</h3>
+    <div class="detail-row"><span>نوع:</span><span id="modalType"></span></div>
+    <div class="detail-row"><span>مبلغ:</span><span id="modalAmount"></span></div>
+    <div class="detail-row"><span>دسته‌بندی:</span><span id="modalCategory"></span></div>
+    <div class="detail-row"><span>توضیحات:</span><span id="modalDescription"></span></div>
+    <div class="modal-buttons"><button class="btn-confirm" id="confirmBtn">✅</button><button class="btn-edit" id="editBtn">✏️</button><button class="btn-cancel" id="cancelBtn">❌</button></div>
+</div></div>
 <div class="success-msg" id="successMsg">✅ ثبت شد!</div>
-
 <script>
-if('serviceWorker' in navigator)navigator.serviceWorker.register('./sw.js').catch(()=>{});
-
-let transactions=JSON.parse(localStorage.getItem('transactions'))||[];
-let currentType='expense',currentPeriod='daily',isRecording=false,recognition=null,speechSupported=false;
-
-function checkSpeech(){
-    if('webkitSpeechRecognition' in window||'SpeechRecognition' in window){
-        speechSupported=true;document.getElementById('permissionBtn').style.display='block';
-    }else{speechSupported=false;document.getElementById('voiceBtn').style.display='none';
-    document.getElementById('voiceStatus').textContent='⚠️ مرورگر از تشخیص صدا پشتیبانی نمی‌کند.'}
-}
-function initSpeech(){
-    if(!speechSupported)return false;
-    try{
-        const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
-        recognition=new SR();recognition.lang='fa-IR';recognition.continuous=false;recognition.interimResults=false;
-        recognition.onstart=()=>{isRecording=true;updVoice('🔴 در حال ضبط...',true)};
-        recognition.onresult=e=>{processVoice(e.results[0][0].transcript);stopRec()};
-        recognition.onerror=e=>{alert('خطا: '+e.error);stopRec()};
-        recognition.onend=()=>stopRec();return true;
-    }catch(e){return false}
-}
+if('serviceWorker' in navigator)navigator.serviceWorker.register('./sw.js').catch(function(){});
+var transactions=JSON.parse(localStorage.getItem('transactions'))||[];
+var currentType='expense',currentPeriod='daily',isRecording=false,recognition=null,speechSupported=false;
+function checkSpeech(){if('webkitSpeechRecognition' in window||'SpeechRecognition' in window){speechSupported=true;document.getElementById('permissionBtn').style.display='block'}else{speechSupported=false;document.getElementById('voiceBtn').style.display='none';document.getElementById('voiceStatus').textContent='⚠️ مرورگر از تشخیص صدا پشتیبانی نمی‌کند'}}
+function initSpeech(){if(!speechSupported)return false;try{var SR=window.SpeechRecognition||window.webkitSpeechRecognition;recognition=new SR();recognition.lang='fa-IR';recognition.continuous=false;recognition.interimResults=false;recognition.onstart=function(){isRecording=true;updVoice('🔴 در حال ضبط...',true)};recognition.onresult=function(e){processVoice(e.results[0][0].transcript);stopRec()};recognition.onerror=function(e){alert('خطا: '+e.error);stopRec()};recognition.onend=function(){stopRec()};return true}catch(e){return false}}
 function save(){localStorage.setItem('transactions',JSON.stringify(transactions));updateUI()}
 function fmt(n){return n.toString().replace(/\B(?=(\d{3})+(?!\d))/g,",")}
-function icon(cat){
-    const m={'خوراک':'🍽️','حمل‌ونقل':'🚗','مسکن':'🏠','پوشاک':'👕','تفریح':'🎭','سلامت':'💊','آموزش':'📚','سایر':'📦','حقوق':'💼','فروش':'🏷️','هدیه':'🎁','سود':'📈'};
-    return m[cat]||'📦';
-}
-
-function updateUI(){
-    const inc=transactions.filter(t=>t.type==='income').reduce((s,t)=>s+t.amount,0);
-    const exp=transactions.filter(t=>t.type==='expense').reduce((s,t)=>s+t.amount,0);
-    document.getElementById('totalBalance').textContent=fmt(inc-exp)+' تومان';
-    document.getElementById('totalIncome').textContent=fmt(inc);
-    document.getElementById('totalExpense').textContent=fmt(exp);
-}
-
-function updateAllTransactions(){
-    const c=document.getElementById('allTransactions');
-    if(transactions.length===0){c.innerHTML='<p style="text-align:center;color:#9ca3af;padding:20px">تراکنشی ثبت نشده</p>';return}
-    c.innerHTML=[...transactions].reverse().map(t=>`
-        <div class="transaction-item">
-            <div class="transaction-icon ${t.type==='income'?'inc':'exp'}">${icon(t.category)}</div>
-            <div class="transaction-details">
-                <div class="title">${t.description||t.category}</div>
-                <div class="category">${t.category} - ${t.date}</div>
-            </div>
-            <div style="display:flex;align-items:center">
-                <button class="delete-btn" onclick="delTx(${t.id})">🗑️</button>
-                <div class="transaction-amount ${t.type}">${t.type==='income'?'+':'-'}${fmt(t.amount)}</div>
-            </div>
-        </div>`).join('');
-}
-function delTx(id){if(confirm('حذف شود؟')){transactions=transactions.filter(t=>t.id!==id);save();updateAllTransactions()}}
-
-// گزارش‌گیری
-function getFiltered(){
-    const now=new Date();let from,to;
-    if(currentPeriod==='daily'){from=new Date(now);from.setHours(0,0,0,0);to=new Date(now);to.setHours(23,59,59,999)}
-    else if(currentPeriod==='weekly'){from=new Date(now);from.setDate(now.getDate()-7);from.setHours(0,0,0,0);to=new Date(now)}
-    else if(currentPeriod==='monthly'){from=new Date(now.getFullYear(),now.getMonth(),1);to=new Date(now)}
-    else{
-        const df=document.getElementById('dateFrom').value,dt=document.getElementById('dateTo').value;
-        if(!df||!dt)return transactions;
-        from=new Date(df);to=new Date(dt);to.setHours(23,59,59,999);
-    }
-    return transactions.filter(t=>{const d=new Date(t.timestamp);return d>=from&&d<=to});
-}
-function updateReports(){
-    const filtered=getFiltered();
-    const inc=filtered.filter(t=>t.type==='income').reduce((s,t)=>s+t.amount,0);
-    const exp=filtered.filter(t=>t.type==='expense').reduce((s,t)=>s+t.amount,0);
-    const days=currentPeriod==='daily'?1:currentPeriod==='weekly'?7:currentPeriod==='monthly'?30:
-        Math.max(1,Math.ceil((new Date(document.getElementById('dateTo').value)-new Date(document.getElementById('dateFrom').value))/(86400000))+1);
-    document.getElementById('reportExpense').textContent=fmt(exp)+' تومان';
-    document.getElementById('reportIncome').textContent=fmt(inc)+' تومان';
-    document.getElementById('reportBalance').textContent=fmt(inc-exp)+' تومان';
-    document.getElementById('reportAvg').textContent=fmt(Math.round(exp/days))+' تومان';
-
-    // نمودار
-    const expenses=filtered.filter(t=>t.type==='expense');
-    const chart=document.getElementById('categoryChart');
-    if(expenses.length===0){chart.innerHTML='<p style="text-align:center;color:#9ca3af">بدون هزینه</p>';return}
-    const cats={};expenses.forEach(t=>cats[t.category]=(cats[t.category]||0)+t.amount);
-    const sorted=Object.entries(cats).sort((a,b)=>b[1]-a[1]);const max=sorted[0][1];
-    const colors=['#667eea','#764ba2','#f59e0b','#10b981','#ef4444','#3b82f6','#8b5cf6','#ec4899'];
-    chart.innerHTML=sorted.map(([c,a],i)=>`
-        <div class="chart-bar">
-            <div class="chart-label">${icon(c)} ${c}</div>
-            <div class="chart-bar-container"><div class="chart-bar-fill" style="width:${(a/max)*100}%;background:${colors[i%8]}"></div></div>
-            <div class="chart-value">${fmt(a)}</div>
-        </div>`).join('');
-
-    // top 5
-    const top=document.getElementById('topExpenses');
-    const top5=[...expenses].sort((a,b)=>b.amount-a.amount).slice(0,5);
-    top.innerHTML=top5.map((e,i)=>`
-        <div class="top-expense-item">
-            <div class="top-expense-rank">${i+1}</div>
-            <div class="top-expense-details"><div class="title">${e.description||e.category}</div><div class="cat">${e.category} - ${e.date}</div></div>
-            <div class="top-expense-amount">${fmt(e.amount)} ت</div>
-        </div>`).join('');
-}
-
-// اکسپورت
-function exportCSV(){
-    const filtered=getFiltered();
-    let csv='\uFEFFنوع,مبلغ,دسته‌بندی,توضیحات,تاریخ\n';
-    filtered.forEach(t=>csv+=`${t.type},${t.amount},${t.category},"${t.description||''}",${t.date}\n`);
-    download(csv,'transactions.csv','text/csv;charset=utf-8');
-}
-function exportJSON(){
-    download(JSON.stringify(getFiltered(),null,2),'transactions.json','application/json');
-}
-function download(data,name,type){
-    const b=new Blob([data],{type});const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download=name;a.click();
-}
-function printReport(){
-    const filtered=getFiltered();
-    const inc=filtered.filter(t=>t.type==='income').reduce((s,t)=>s+t.amount,0);
-    const exp=filtered.filter(t=>t.type==='expense').reduce((s,t)=>s+t.amount,0);
-    let html='<html dir="rtl"><head><meta charset="UTF-8"><title>گزارش</title><style>body{font-family:Tahoma;padding:20px}table{width:100%;border-collapse:collapse}th,td{border:1px solid #ddd;padding:8px;text-align:center}th{background:#667eea;color:white}.inc{color:green}.exp{color:red}</style></head><body>';
-    html+='<h1>📊 گزارش مالی</h1>';
-    html+=`<p>درآمد: <b class="inc">${fmt(inc)}</b> | هزینه: <b class="exp">${fmt(exp)}</b> | خالص: <b>${fmt(inc-exp)}</b> تومان</p>`;
-    html+='<table><tr><th>نوع</th><th>مبلغ</th><th>دسته</th><th>توضیحات</th><th>تاریخ</th></tr>';
-    filtered.forEach(t=>html+=`<tr><td>${t.type==='income'?'درآمد':'هزینه'}</td><td class="${t.type}">${fmt(t.amount)}</td><td>${t.category}</td><td>${t.description||'-'}</td><td>${t.date}</td></tr>`);
-    html+='</table></body></html>';
-    const w=window.open('');w.document.write(html);w.print();
-}
-
-function processVoice(text){
-    const m=text.match(/(\d+)/);let amt=m?parseInt(m[1]):0;
-    if(text.includes('هزار'))amt*=1000;if(text.includes('میلیون'))amt*=1000000;
-    const incW=['دریافت','گرفتم','حقوق','فروش','هدیه','سود'];
-    let type=incW.some(w=>text.includes(w))?'income':'expense';
-    const catMap={'خوراک':['ناهار','شام','صبحانه','غذا','رستوران'],'حمل‌ونقل':['بنزین','تاکسی','اسنپ','مترو'],'مسکن':['اجاره','قبض','برق','گاز'],'پوشاک':['لباس','کفش'],'تفریح':['سینما','مسافرت'],'سلامت':['دارو','دکتر'],'آموزش':['کتاب','کلاس']};
-    let cat='سایر';for(const[k,w]of Object.entries(catMap))if(w.some(w2=>text.includes(w2))){cat=k;break}
-    document.getElementById('amount').value=amt;document.getElementById('description').value=text;
-    currentType=type;document.querySelectorAll('.tab').forEach(t=>t.classList.toggle('active',t.dataset.type===type));
-    updateCatOptions();document.getElementById('category').value=cat;showModal();
-}
-function updateCatOptions(){
-    const s=document.getElementById('category');
-    if(currentType==='income')s.innerHTML='<option value="حقوق">💼 حقوق</option><option value="فروش">🏷️ فروش</option><option value="هدیه">🎁 هدیه</option><option value="سود">📈 سود</option><option value="سایر">📦 سایر</option>';
-    else s.innerHTML='<option value="خوراک">🍽️ خوراک</option><option value="حمل‌ونقل">🚗 حمل‌ونقل</option><option value="مسکن">🏠 مسکن</option><option value="پوشاک">👕 پوشاک</option><option value="تفریح">🎭 تفریح</option><option value="سلامت">💊 سلامت</option><option value="آموزش">📚 آموزش</option><option value="سایر">📦 سایر</option>';
-}
-function showModal(){
-    const amt=document.getElementById('amount').value;if(!amt){alert('مبلغ را وارد کنید');return}
-    document.getElementById('modalType').textContent=currentType==='income'?'💰 درآمد':'💸 هزینه';
-    document.getElementById('modalAmount').textContent=fmt(amt)+' تومان';
-    document.getElementById('modalCategory').textContent=document.getElementById('category').value;
-    document.getElementById('modalDescription').textContent=document.getElementById('description').value||'-';
-    document.getElementById('confirmationModal').style.display='flex';
-}
-function addTx(){
-    const amt=parseInt(document.getElementById('amount').value);if(!amt||amt<=0){alert('مبلغ معتبر وارد کنید');return}
-    transactions.push({id:Date.now(),type:currentType,amount:amt,category:document.getElementById('category').value,description:document.getElementById('description').value,date:new Date().toLocaleDateString('fa-IR'),timestamp:Date.now()});
-    save();document.getElementById('amount').value='';document.getElementById('description').value='';
-    const msg=document.getElementById('successMsg');msg.style.display='block';setTimeout(()=>msg.style.display='none',2000);
-}
-function updVoice(t,r){document.getElementById('voiceStatus').textContent=t;
-    document.getElementById('voiceBtn').classList.toggle('recording',r);
-    document.getElementById('voiceBtn').innerHTML=r?'<span>🔴</span><span>ضبط...</span>':'<span>🎤</span><span>ثبت با صدا</span>'}
+function getIcon(cat){var m={'خوراک':'🍽️','حمل‌ونقل':'🚗','مسکن':'🏠','پوشاک':'👕','تفریح':'🎭','سلامت':'💊','آموزش':'📚','سایر':'📦','حقوق':'💼','فروش':'🏷️','هدیه':'🎁','سود':'📈'};return m[cat]||'📦'}
+function updateUI(){var inc=0,exp=0;for(var i=0;i<transactions.length;i++){if(transactions[i].type==='income')inc+=transactions[i].amount;else exp+=transactions[i].amount}document.getElementById('totalBalance').textContent=fmt(inc-exp)+' تومان';document.getElementById('totalIncome').textContent=fmt(inc);document.getElementById('totalExpense').textContent=fmt(exp)}
+function updateAllTransactions(){var c=document.getElementById('allTransactions');if(transactions.length===0){c.innerHTML='<p style="text-align:center;color:#9ca3af;padding:20px">تراکنشی ثبت نشده</p>';return}var html='';for(var i=transactions.length-1;i>=0;i--){var t=transactions[i];var ic=t.type==='income'?'inc':'exp';var sg=t.type==='income'?'+':'-';html+='<div class="transaction-item"><div class="transaction-icon '+ic+'">'+getIcon(t.category)+'</div><div class="transaction-details"><div class="title">'+(t.description||t.category)+'</div><div class="category">'+t.category+' - '+t.date+'</div></div><div style="display:flex;align-items:center"><button class="delete-btn" onclick="delTx('+t.id+')">🗑️</button><div class="transaction-amount '+t.type+'">'+sg+fmt(t.amount)+'</div></div></div>'}c.innerHTML=html}
+function delTx(id){if(confirm('حذف شود؟')){var nl=[];for(var i=0;i<transactions.length;i++){if(transactions[i].id!==id)nl.push(transactions[i])}transactions=nl;save();updateAllTransactions()}}
+function getFiltered(){var now=new Date(),from,to;if(currentPeriod==='daily'){from=new Date(now);from.setHours(0,0,0,0);to=new Date(now);to.setHours(23,59,59,999)}else if(currentPeriod==='weekly'){from=new Date(now);from.setDate(now.getDate()-7);from.setHours(0,0,0,0);to=new Date(now)}else if(currentPeriod==='monthly'){from=new Date(now.getFullYear(),now.getMonth(),1);to=new Date(now)}else{var df=document.getElementById('dateFrom').value,dt=document.getElementById('dateTo').value;if(!df||!dt)return transactions;from=new Date(df);to=new Date(dt);to.setHours(23,59,59,999)}var r=[];for(var i=0;i<transactions.length;i++){var d=new Date(transactions[i].timestamp);if(d>=from&&d<=to)r.push(transactions[i])}return r}
+function updateReports(){var filtered=getFiltered(),inc=0,exp=0;for(var i=0;i<filtered.length;i++){if(filtered[i].type==='income')inc+=filtered[i].amount;else exp+=filtered[i].amount}var days=1;if(currentPeriod==='weekly')days=7;else if(currentPeriod==='monthly')days=30;else if(currentPeriod==='custom'){var df=document.getElementById('dateFrom').value,dt=document.getElementById('dateTo').value;if(df&&dt)days=Math.max(1,Math.ceil((new Date(dt)-new Date(df))/86400000)+1)}document.getElementById('reportExpense').textContent=fmt(exp)+' تومان';document.getElementById('reportIncome').textContent=fmt(inc)+' تومان';document.getElementById('reportBalance').textContent=fmt(inc-exp)+' تومان';document.getElementById('reportAvg').textContent=fmt(Math.round(exp/days))+' تومان';var expenses=[];for(var i=0;i<filtered.length;i++)if(filtered[i].type==='expense')expenses.push(filtered[i]);var chart=document.getElementById('categoryChart');if(expenses.length===0){chart.innerHTML='<p style="text-align:center;color:#9ca3af">بدون هزینه</p>'}else{var cats={};for(var i=0;i<expenses.length;i++){var cat=expenses[i].category;if(!cats[cat])cats[cat]=0;cats[cat]+=expenses[i].amount}var sorted=[];for(var key in cats)sorted.push([key,cats[key]]);sorted.sort(function(a,b){return b[1]-a[1]});var max=sorted[0][1],colors=['#667eea','#764ba2','#f59e0b','#10b981','#ef4444','#3b82f6','#8b5cf6','#ec4899'],ch='';for(var i=0;i<sorted.length;i++){var pct=(sorted[i][1]/max)*100;ch+='<div class="chart-bar"><div class="chart-label">'+getIcon(sorted[i][0])+' '+sorted[i][0]+'</div><div class="chart-bar-container"><div class="chart-bar-fill" style="width:'+pct+'%;background:'+colors[i%8]+'"></div></div><div class="chart-value">'+fmt(sorted[i][1])+'</div></div>'}chart.innerHTML=ch}var top=document.getElementById('topExpenses');if(expenses.length===0){top.innerHTML='<p style="text-align:center;color:#9ca3af">بدون هزینه</p>'}else{expenses.sort(function(a,b){return b.amount-a.amount});var cnt=Math.min(5,expenses.length),th='';for(var i=0;i<cnt;i++){var e=expenses[i];th+='<div class="top-expense-item"><div class="top-expense-rank">'+(i+1)+'</div><div class="top-expense-details"><div class="title">'+(e.description||e.category)+'</div><div class="cat">'+e.category+' - '+e.date+'</div></div><div class="top-expense-amount">'+fmt(e.amount)+' ت</div></div>'}top.innerHTML=th}}
+function exportCSV(){var f=getFiltered(),csv='\uFEFFنوع,مبلغ,دسته‌بندی,توضیحات,تاریخ\n';for(var i=0;i<f.length;i++){var t=f[i];csv+=t.type+','+t.amount+','+t.category+',"'+(t.description||'')+'",'+t.date+'\n'}dl(csv,'transactions.csv','text/csv;charset=utf-8')}
+function exportJSON(){dl(JSON.stringify(getFiltered(),null,2),'transactions.json','application/json')}
+function dl(data,name,type){var b=new Blob([data],{type:type});var a=document.createElement('a');a.href=URL.createObjectURL(b);a.download=name;a.click()}
+function printReport(){var f=getFiltered(),inc=0,exp=0;for(var i=0;i<f.length;i++){if(f[i].type==='income')inc+=f[i].amount;else exp+=f[i].amount}var h='<html dir="rtl"><head><meta charset="UTF-8"><title>گزارش</title><style>body{font-family:Tahoma;padding:20px}table{width:100%;border-collapse:collapse}th,td{border:1px solid #ddd;padding:8px;text-align:center}th{background:#667eea;color:white}.inc{color:green}.exp{color:red}</style></head><body><h1>📊 گزارش مالی</h1><p>درآمد: <b class="inc">'+fmt(inc)+'</b> | هزینه: <b class="exp">'+fmt(exp)+'</b> | خالص: <b>'+fmt(inc-exp)+'</b> تومان</p><table><tr><th>نوع</th><th>مبلغ</th><th>دسته</th><th>توضیحات</th><th>تاریخ</th></tr>';for(var i=0;i<f.length;i++){var t=f[i];h+='<tr><td>'+(t.type==='income'?'درآمد':'هزینه')+'</td><td class="'+t.type+'">'+fmt(t.amount)+'</td><td>'+t.category+'</td><td>'+(t.description||'-')+'</td><td>'+t.date+'</td></tr>'}h+='</table></body></html>';var w=window.open('');w.document.write(h);w.print()}
+function processVoice(text){var m=text.match(/(\d+)/);var amt=m?parseInt(m[1]):0;if(text.indexOf('هزار')!==-1)amt*=1000;if(text.indexOf('میلیون')!==-1)amt*=1000000;var iw=['دریافت','گرفتم','حقوق','فروش','هدیه','سود'];var type='expense';for(var i=0;i<iw.length;i++)if(text.indexOf(iw[i])!==-1){type='income';break}var cm={'خوراک':['ناهار','شام','صبحانه','غذا','رستوران'],'حمل‌ونقل':['بنزین','تاکسی','اسنپ','مترو'],'مسکن':['اجاره','قبض','برق','گاز'],'پوشاک':['لباس','کفش'],'تفریح':['سینما','مسافرت'],'سلامت':['دارو','دکتر'],'آموزش':['کتاب','کلاس']};var cat='سایر';for(var key in cm){var ws=cm[key];for(var j=0;j<ws.length;j++)if(text.indexOf(ws[j])!==-1){cat=key;break}if(cat!=='سایر')break}document.getElementById('amount').value=amt;document.getElementById('description').value=text;currentType=type;var tabs=document.querySelectorAll('.tab');for(var i=0;i<tabs.length;i++){if(tabs[i].dataset.type===type)tabs[i].classList.add('active');else tabs[i].classList.remove('active')}updateCatOptions();document.getElementById('category').value=cat;showModal()}
+function updateCatOptions(){var s=document.getElementById('category');if(currentType==='income')s.innerHTML='<option value="حقوق">💼 حقوق</option><option value="فروش">🏷️ فروش</option><option value="هدیه">🎁 هدیه</option><option value="سود">📈 سود</option><option value="سایر">📦 سایر</option>';else s.innerHTML='<option value="خوراک">🍽️ خوراک</option><option value="حمل‌ونقل">🚗 حمل‌ونقل</option><option value="مسکن">🏠 مسکن</option><option value="پوشاک">👕 پوشاک</option><option value="تفریح">🎭 تفریح</option><option value="سلامت">💊 سلامت</option><option value="آموزش">📚 آموزش</option><option value="سایر">📦 سایر</option>'}
+function showModal(){var amt=document.getElementById('amount').value;if(!amt){alert('مبلغ را وارد کنید');return}document.getElementById('modalType').textContent=currentType==='income'?'💰 درآمد':'💸 هزینه';document.getElementById('modalAmount').textContent=fmt(amt)+' تومان';document.getElementById('modalCategory').textContent=document.getElementById('category').value;document.getElementById('modalDescription').textContent=document.getElementById('description').value||'-';document.getElementById('confirmationModal').style.display='flex'}
+function addTx(){var amt=parseInt(document.getElementById('amount').value);if(!amt||amt<=0){alert('مبلغ معتبر وارد کنید');return}transactions.push({id:Date.now(),type:currentType,amount:amt,category:document.getElementById('category').value,description:document.getElementById('description').value,date:new Date().toLocaleDateString('fa-IR'),timestamp:Date.now()});save();document.getElementById('amount').value='';document.getElementById('description').value='';var msg=document.getElementById('successMsg');msg.style.display='block';setTimeout(function(){msg.style.display='none'},2000)}
+function updVoice(t,r){document.getElementById('voiceStatus').textContent=t;var btn=document.getElementById('voiceBtn');if(r){btn.classList.add('recording');btn.innerHTML='<span>🔴</span><span>ضبط...</span>'}else{btn.classList.remove('recording');btn.innerHTML='<span>🎤</span><span>ثبت با صدا</span>'}}
 function stopRec(){isRecording=false;updVoice('برای شروع دکمه را بزنید',false)}
-
-// رویدادها
-document.querySelectorAll('.nav-tab').forEach(tab=>tab.addEventListener('click',function(){
-    document.querySelectorAll('.nav-tab').forEach(t=>t.classList.remove('active'));this.classList.add('active');
-    document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
-    document.getElementById('page-'+this.dataset.page).classList.add('active');
-    if(this.dataset.page==='history')updateAllTransactions();if(this.dataset.page==='report')updateReports();
-}));
-document.querySelectorAll('.tab').forEach(tab=>tab.addEventListener('click',function(){
-    document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));this.classList.add('active');
-    currentType=this.dataset.type;updateCatOptions();
-}));
-document.querySelectorAll('.report-tab').forEach(tab=>tab.addEventListener('click',function(){
-    document.querySelectorAll('.report-tab').forEach(t=>t.classList.remove('active'));this.classList.add('active');
-    currentPeriod=this.dataset.period;
-    document.getElementById('dateFrom').parentElement.style.display=currentPeriod==='custom'?'flex':'none';
-    updateReports();
-}));
-document.getElementById('dateFrom').addEventListener('change',updateReports);
-document.getElementById('dateTo').addEventListener('change',updateReports);
+var navTabs=document.querySelectorAll('.nav-tab');for(var i=0;i<navTabs.length;i++){navTabs[i].addEventListener('click',function(){for(var j=0;j<navTabs.length;j++)navTabs[j].classList.remove('active');this.classList.add('active');var pages=document.querySelectorAll('.page');for(var j=0;j<pages.length;j++)pages[j].classList.remove('active');document.getElementById('page-'+this.dataset.page).classList.add('active');if(this.dataset.page==='history')updateAllTransactions();if(this.dataset.page==='report')updateReports()})}
+var typeTabs=document.querySelectorAll('.tab');for(var i=0;i<typeTabs.length;i++){typeTabs[i].addEventListener('click',function(){for(var j=0;j<typeTabs.length;j++)typeTabs[j].classList.remove('active');this.classList.add('active');currentType=this.dataset.type;updateCatOptions()})}
+var reportTabs=document.querySelectorAll('.report-tab');for(var i=0;i<reportTabs.length;i++){reportTabs[i].addEventListener('click',function(){for(var j=0;j<reportTabs.length;j++)reportTabs[j].classList.remove('active');this.classList.add('active');currentPeriod=this.dataset.period;var df=document.querySelector('.date-filter');df.style.display=currentPeriod==='custom'?'flex':'none';updateReports()})}
+document.getElementById('dateFrom').addEventListener('change',updateReports);document.getElementById('dateTo').addEventListener('change',updateReports);
 document.getElementById('permissionBtn').addEventListener('click',function(){if(!recognition&&!initSpeech())return;try{recognition.start();this.style.display='none'}catch(e){alert('خطا')}});
 document.getElementById('voiceBtn').addEventListener('click',function(){if(isRecording){if(recognition)recognition.stop();stopRec()}else{if(!recognition&&!initSpeech())return;try{recognition.start()}catch(e){alert('خطا')}}});
 document.getElementById('submitBtn').addEventListener('click',showModal);
-document.getElementById('confirmBtn').addEventListener('click',()=>{document.getElementById('confirmationModal').style.display='none';addTx()});
-document.getElementById('editBtn').addEventListener('click',()=>document.getElementById('confirmationModal').style.display='none');
-document.getElementById('cancelBtn').addEventListener('click',()=>document.getElementById('confirmationModal').style.display='none');
-
+document.getElementById('confirmBtn').addEventListener('click',function(){document.getElementById('confirmationModal').style.display='none';addTx()});
+document.getElementById('editBtn').addEventListener('click',function(){document.getElementById('confirmationModal').style.display='none'});
+document.getElementById('cancelBtn').addEventListener('click',function(){document.getElementById('confirmationModal').style.display='none'});
 checkSpeech();updateUI();
 </script>
+</body>
+</html>
