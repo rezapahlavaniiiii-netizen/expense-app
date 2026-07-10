@@ -315,7 +315,7 @@
         .success-message {
             display: none;
             position: fixed;
-            top: 20px;
+            top:  Safari
             left: 50%;
             transform: translateX(-50%);
             background: #10b981;
@@ -342,6 +342,16 @@
         .voice-status.recording {
             color: #ef4444;
             font-weight: bold;
+        }
+
+        .debug-info {
+            background: #f3f4f6;
+            border-radius: 12px;
+            padding: 15px;
+            margin-top: 15px;
+            font-size: 12px;
+            color: #6b7280;
+            display: none;
         }
     </style>
 </head>
@@ -404,44 +414,13 @@
             
             <div class="voice-status" id="voiceStatus">برای شروع، دکمه میکروفون را بزنید</div>
             
+            <div class="debug-info" id="debugInfo"></div>
+            
             <button class="submit-btn" id="submitBtn">ثبت تراکنش</button>
         </div>
         
         <div class="transactions-list">
-            <h3>📋 تراکنش‌های اخیر</h3>
-            <div id="transactionsContainer"></div>
-        </div>
-    </div>
-    
-    <div class="confirmation-modal" id="confirmationModal">
-        <div class="modal-content">
-            <h3>📋 تأیید اطلاعات</h3>
-            <div class="detail-row">
-                <span>نوع:</span>
-                <span id="modalType"></span>
-            </div>
-            <div class="detail-row">
-                <span>مبلغ:</span>
-                <span id="modalAmount"></span>
-            </div>
-            <div class="detail-row">
-                <span>دسته‌بندی:</span>
-                <span id="modalCategory"></span>
-            </div>
-            <div class="detail-row">
-                <span>توضیحات:</span>
-                <span id="modalDescription"></span>
-            </div>
-            <div class="modal-buttons">
-                <button class="btn-confirm" id="confirmBtn">✅ تأیید</button>
-                <button class="btn-edit" id="editBtn">✏️ ویرایش</button>
-                <button class="btn-cancel" id="cancelBtn">❌ لغو</button>
-            </div>
-        </div>
-    </div>
-    
-    <div class="success-message" id="successMessage">✅ تراکنش با موفقیت ثبت شد!</div>
-    
+            <h3>📋 تراکنش‌های اخیر</h صحبت کنید
     <script>
         // ذخیره‌سازی داده‌ها
         let transactions = JSON.parse(localStorage.getItem('transactions')) || [];
@@ -450,28 +429,64 @@
         let recognition = null;
         
         // تنظیمات تشخیص صدا
-        if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
-            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-            recognition = new SpeechRecognition();
-            recognition.lang = 'fa-IR';
-            recognition.continuous = false;
-            recognition.interimResults = false;
-            
-            recognition.onresult = function(event) {
-                const transcript = event.results[0][0].transcript;
-                processVoiceInput(transcript);
-                stopRecording();
-            };
-            
-            recognition.onerror = function(event) {
-                console.error('Speech recognition error:', event.error);
-                stopRecording();
-                alert('خطا در تشخیص صدا. لطفاً دوباره تلاش کنید.');
-            };
-            
-            recognition.onend = function() {
-                stopRecording();
-            };
+        function initSpeechRecognition() {
+            if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
+                const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+                recognition = new SpeechRecognition();
+                recognition.lang = 'fa-IR';
+                recognition.continuous = false;
+                recognition.interimResults = false;
+                recognition.maxAlternatives = 1;
+                
+                recognition.onstart = function() {
+                    console.log('Speech recognition started');
+                    updateVoiceStatus('🔴 در حال ضبط... صحبت کنید', true);
+                };
+                
+                recognition.onresult = function(event) {
+                    console.log('Speech recognition result:', event.results);
+                    const transcript = event.results[0][0].transcript;
+                    console.log('Transcript:', transcript);
+                    processVoiceInput(transcript);
+                    stopRecording();
+                };
+                
+                recognition.onerror = function(event) {
+                    console.error('Speech recognition error:', event.error);
+                    let errorMessage = 'خطا در تشخیص صدا';
+                    
+                    switch(event.error) {
+                        case 'no-speech':
+                            errorMessage = 'صدایی شنیده نشد. لطفاً دوباره تلاش کنید.';
+                            break;
+                        case 'audio-capture':
+                            errorMessage = 'خطا در دسترسی به میکروفون. لطفاً دسترسی را بررسی کنید.';
+                            break;
+                        case 'not-allowed':
+                            errorMessage = 'دسترسی به میکروفون رد شد. لطفاً در تنظیمات Safari اجازه دهید.';
+                            break;
+                        case 'network':
+                            errorMessage = 'خطا در اتصال به اینترنت. لطفاً اتصال خود را بررسی کنید.';
+                            break;
+                        default:
+                            errorMessage = 'خطا در تشخیص صدا: ' + event.error;
+                    }
+                    
+                    alert(errorMessage);
+                    stopRecording();
+                };
+                
+                recognition.onend = function() {
+                    console.log('Speech recognition ended');
+                    stopRecording();
+                };
+                
+                return true;
+            } else {
+                console.warn('Speech recognition not supported');
+                alert('مرورگر شما از تشخیص صدا پشتیبانی نمی‌کند. لطفاً از Safari استفاده کنید.');
+                return false;
+            }
         }
         
         // توابع اصلی
@@ -541,6 +556,8 @@
         }
         
         function processVoiceInput(text) {
+            console.log('Processing voice input:', text);
+            
             // استخراج مبلغ
             const amountMatch = text.match(/(\d+)\s*(هزار|میلیون)?\s*(تومان|تومن|ریال)?/);
             let amount = 0;
@@ -660,25 +677,41 @@
             }, 2000);
         }
         
+        function updateVoiceStatus(text, isRecording) {
+            const status = document.getElementById('voiceStatus');
+            status.textContent = text;
+            status.classList.toggle('recording', isRecording);
+            
+            const btn = document.getElementById('voiceBtn');
+            btn.classList.toggle('recording', isRecording);
+            
+            if (isRecording) {
+                btn.innerHTML = '<span>🔴</span><span>در حال ضبط...</span>';
+            } else {
+                btn.innerHTML = '<span>🎤</span><span>ثبت با صدا</span>';
+            }
+        }
+        
         function startRecording() {
             if (!recognition) {
-                alert('مرورگر شما از تشخیص صدا پشتیبانی نمی‌کند');
-                return;
+                if (!initSpeechRecognition()) {
+                    return;
+                }
             }
             
-            isRecording = true;
-            document.getElementById('voiceBtn').classList.add('recording');
-            document.getElementById('voiceStatus').textContent = '🔴 در حال ضبط... صحبت کنید';
-            document.getElementById('voiceStatus').classList.add('recording');
-            
-            recognition.start();
+            try {
+                recognition.start();
+                isRecording = true;
+                updateVoiceStatus('🔴 در حال ضبط... صحبت کنید', true);
+            } catch (e) {
+                console.error('Error starting recognition:', e);
+                alert('خطا در شروع ضبط. لطفاً صفحه را رفرش کنید.');
+            }
         }
         
         function stopRecording() {
             isRecording = false;
-            document.getElementById('voiceBtn').classList.remove('recording');
-            document.getElementById('voiceStatus').textContent = 'برای شروع، دکمه میکروفون را بزنید';
-            document.getElementById('voiceStatus').classList.remove('recording');
+            updateVoiceStatus('برای شروع، دکمه میکروفون را بزنید', false);
         }
         
         // رویدادها
@@ -736,6 +769,7 @@
         document.getElementById('cancelBtn').addEventListener('click', hideConfirmationModal);
         
         // بارگذاری اولیه
+        initSpeechRecognition();
         updateUI();
     </script>
 </body>
