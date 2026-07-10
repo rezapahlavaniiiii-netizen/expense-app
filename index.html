@@ -1,797 +1,278 @@
-<!DOCTYPE html>
-<html lang="fa" dir="rtl">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>مدیریت هزینه هوشمند</title>
-    <link rel="manifest" href="manifest.json">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title" content="مدیریت هزینه">
-    <link rel="apple-touch-icon" href="icon-192.png">
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-        }
-        
-        body {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            min-height: 100vh;
-            padding: 20px;
-            padding-bottom: 100px;
-        }
-        
-        .container {
-            max-width: 500px;
-            margin: 0 auto;
-        }
-        
-        header {
-            text-align: center;
-            color: white;
-            margin-bottom: 30px;
-        }
-        
-        header h1 {
-            font-size: 28px;
-            margin-bottom: 10px;
-        }
-        
-        .balance-card {
-            background: rgba(255,255,255,0.2);
-            backdrop-filter: blur(10px);
-            border-radius: 20px;
-            padding: 25px;
-            text-align: center;
-            color: white;
-            margin-bottom: 25px;
-        }
-        
-        .balance-card h2 {
-            font-size: 16px;
-            opacity: 0.9;
-        }
-        
-        .balance-card .amount {
-            font-size: 42px;
-            font-weight: bold;
-            margin: 10px 0;
-        }
-        
-        .balance-card .summary {
-            display: flex;
-            justify-content: space-around;
-            margin-top: 15px;
-        }
-        
-        .summary-item {
-            text-align: center;
-        }
-        
-        .summary-item .label {
-            font-size: 12px;
-            opacity: 0.8;
-        }
-        
-        .summary-item .value {
-            font-size: 18px;
-            font-weight: bold;
-        }
-        
-        .income { color: #4ade80; }
-        .expense { color: #f87171; }
-        
-        .input-section {
-            background: white;
-            border-radius: 20px;
-            padding: 25px;
-            margin-bottom: 25px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
-        }
-        
-        .tabs {
-            display: flex;
-            margin-bottom: 20px;
-            background: #f3f4f6;
-            border-radius: 12px;
-            padding: 4px;
-        }
-        
-        .tab {
-            flex: 1;
-            padding: 12px;
-            text-align: center;
-            border-radius: 10px;
-            cursor: pointer;
-            transition: all 0.3s;
-            font-weight: 500;
-        }
-        
-        .tab.active {
-            background: #667eea;
-            color: white;
-        }
-        
-        .form-group {
-            margin-bottom: 15px;
-        }
-        
-        .form-group label {
-            display: block;
-            margin-bottom: 8px;
-            color: #374151;
-            font-weight: 500;
-        }
-        
-        .form-group input,
-        .form-group select,
-        .form-group textarea {
-            width: 100%;
-            padding: 14px;
-            border: 2px solid #e5e7eb;
-            border-radius: 12px;
-            font-size: 16px;
-            transition: border-color 0.3s;
-        }
-        
-        .form-group input:focus,
-        .form-group select:focus,
-        .form-group textarea:focus {
-            outline: none;
-            border-color: #667eea;
-        }
-        
-        .voice-btn {
-            width: 100%;
-            padding: 18px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            border: none;
-            border-radius: 15px;
-            font-size: 18px;
-            font-weight: bold;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 10px;
-            transition: transform 0.2s;
-        }
-        
-        .voice-btn:active {
-            transform: scale(0.98);
-        }
-        
-        .voice-btn.recording {
-            animation: pulse 1.5s infinite;
-            background: linear-gradient(135deg, #f87171 0%, #ef4444 100%);
-        }
-        
-        @keyframes pulse {
-            0% { box-shadow: 0 0 0 0 rgba(248,113,113,0.7); }
-            70% { box-shadow: 0 0 0 15px rgba(248,113,113,0); }
-            100% { box-shadow: 0 0 0 0 rgba(248,113,113,0); }
-        }
-        
-        .submit-btn {
-            width: 100%;
-            padding: 16px;
-            background: #10b981;
-            color: white;
-            border: none;
-            border-radius: 12px;
-            font-size: 16px;
-            font-weight: bold;
-            cursor: pointer;
-            margin-top: 10px;
-        }
-        
-        .transactions-list {
-            background: white;
-            border-radius: 20px;
-            padding: 25px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
-        }
-        
-        .transactions-list h3 {
-            margin-bottom: 20px;
-            color: #374151;
-        }
-        
-        .transaction-item {
-            display: flex;
-            align-items: center;
-            padding: 15px;
-            border-bottom: 1px solid #f3f4f6;
-        }
-        
-        .transaction-item:last-child {
-            border-bottom: none;
-        }
-        
-        .transaction-icon {
-            width: 50px;
-            height: 50px;
-            border-radius: 12px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 24px;
-            margin-left: 15px;
-        }
-        
-        .transaction-details {
-            flex: 1;
-        }
-        
-        .transaction-details .title {
-            font-weight: 600;
-            color: #374151;
-        }
-        
-        .transaction-details .category {
-            font-size: 13px;
-            color: #9ca3af;
-        }
-        
-        .transaction-amount {
-            font-weight: bold;
-            font-size: 16px;
-        }
-        
-        .confirmation-modal {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: rgba(0,0,0,0.5);
-            z-index: 1000;
-            align-items: center;
-            justify-content: center;
-            padding: 20px;
-        }
-        
-        .modal-content {
-            background: white;
-            border-radius: 20px;
-            padding: 30px;
-            width: 100%;
-            max-width: 400px;
-        }
-        
-        .modal-content h3 {
-            text-align: center;
-            margin-bottom: 20px;
-            color: #374151;
-        }
-        
-        .modal-content .detail-row {
-            display: flex;
-            justify-content: space-between;
-            padding: 10px 0;
-            border-bottom: 1px solid #f3f4f6;
-        }
-        
-        .modal-content .detail-row:last-of-type {
-            border-bottom: none;
-        }
-        
-        .modal-buttons {
-            display: flex;
-            gap: 10px;
-            margin-top: 20px;
-        }
-        
-        .modal-buttons button {
-            flex: 1;
-            padding: 14px;
-            border: none;
-            border-radius: 12px;
-            font-size: 16px;
-            font-weight: bold;
-            cursor: pointer;
-        }
-        
-        .btn-confirm {
-            background: #10b981;
-            color: white;
-        }
-        
-        .btn-edit {
-            background: #f59e0b;
-            color: white;
-        }
-        
-        .btn-cancel {
-            background: #ef4444;
-            color: white;
-        }
-        
-        .success-message {
-            display: none;
-            position: fixed;
-            top: 20px;
-            left: 50%;
-            transform: translateX(-50%);
-            background: #10b981;
-            color: white;
-            padding: 15px 30px;
-            border-radius: 12px;
-            font-weight: bold;
-            z-index: 1001;
-            animation: slideDown 0.5s;
-        }
-        
-        @keyframes slideDown {
-            from { top: -100px; opacity: 0; }
-            to { top: 20px; opacity: 1; }
-        }
-        
-        .voice-status {
-            text-align: center;
-            padding: 15px;
-            color: #6b7280;
-            font-size: 14px;
-        }
-        
-        .voice-status.recording {
-            color: #ef4444;
-            font-weight: bold;
-        }
-    </style>
-</head>
-<body>
-    <div class="container">
-        <header>
-            <h1>💰 مدیریت هزینه هوشمند</h1>
-            <p>با صدای خود هزینه‌ها را مدیریت کنید</p>
-        </header>
-        
-        <div class="balance-card">
-            <h2>موجودی کل</h2>
-            <div class="amount" id="totalBalance">0 تومان</div>
-            <div class="summary">
-                <div class="summary-item">
-                    <div class="label">درآمد</div>
-                    <div class="value income" id="totalIncome">0</div>
-                </div>
-                <div class="summary-item">
-                    <div class="label">هزینه</div>
-                    <div class="value expense" id="totalExpense">0</div>
-                </div>
-            </div>
-        </div>
-        
-        <div class="input-section">
+<!-- صفحه خانه -->
+    <div class="page active" id="page-home">
+        <div class="card">
             <div class="tabs">
                 <div class="tab active" data-type="expense">💸 هزینه</div>
                 <div class="tab" data-type="income">💰 درآمد</div>
             </div>
-            
-            <div class="form-group">
-                <label>💰 مبلغ (تومان)</label>
-                <input type="number" id="amount" placeholder="مثال: 50000">
-            </div>
-            
-            <div class="form-group">
-                <label>📂 دسته‌بندی</label>
-                <select id="category">
-                    <option value="خوراک">🍽️ خوراک</option>
-                    <option value="حمل‌ونقل">🚗 حمل‌ونقل</option>
-                    <option value="مسکن">🏠 مسکن</option>
-                    <option value="پوشاک">👕 پوشاک</option>
-                    <option value="تفریح">🎭 تفریح</option>
-                    <option value="سلامت">💊 سلامت</option>
-                    <option value="آموزش">📚 آموزش</option>
-                    <option value="سایر">📦 سایر</option>
-                </select>
-            </div>
-            
-            <div class="form-group">
-                <label>📝 توضیحات</label>
-                <textarea id="description" placeholder="توضیحات تراکنش..." rows="2"></textarea>
-            </div>
-            
-            <button class="voice-btn" id="voiceBtn">
-                <span>🎤</span>
-                <span>ثبت با صدا</span>
-            </button>
-            
+            <div class="form-group"><label>💰 مبلغ (تومان)</label><input type="number" id="amount" placeholder="مثال: 50000"></div>
+            <div class="form-group"><label>📂 دسته‌بندی</label><select id="category">
+                <option value="خوراک">🍽️ خوراک</option><option value="حمل‌ونقل">🚗 حمل‌ونقل</option>
+                <option value="مسکن">🏠 مسکن</option><option value="پوشاک">👕 پوشاک</option>
+                <option value="تفریح">🎭 تفریح</option><option value="سلامت">💊 سلامت</option>
+                <option value="آموزش">📚 آموزش</option><option value="سایر">📦 سایر</option>
+            </select></div>
+            <div class="form-group"><label>📝 توضیحات</label><textarea id="description" placeholder="توضیحات..." rows="2"></textarea></div>
+            <button class="permission-btn" id="permissionBtn">🎤 اجازه دسترسی به میکروفون</button>
+            <button class="voice-btn" id="voiceBtn"><span>🎤</span><span>ثبت با صدا</span></button>
             <div class="voice-status" id="voiceStatus">برای شروع، دکمه میکروفون را بزنید</div>
-            
-            <button class="submit-btn" id="submitBtn">ثبت تراکنش</button>
-        </div>
-        
-        <div class="transactions-list">
-            <h3>📋 تراکنش‌های اخیر</h3>
-            <div id="transactionsContainer"></div>
+            <button class="submit-btn" id="submitBtn">✅ ثبت تراکنش</button>
         </div>
     </div>
-    
-    <div class="confirmation-modal" id="confirmationModal">
-        <div class="modal-content">
-            <h3>📋 تأیید اطلاعات</h3>
-            <div class="detail-row">
-                <span>نوع:</span>
-                <span id="modalType"></span>
+
+    <!-- صفحه گزارش -->
+    <div class="page" id="page-report">
+        <div class="card report-section">
+            <h3>📅 فیلتر تاریخ</h3>
+            <div class="date-filter">
+                <input type="date" id="dateFrom">
+                <input type="date" id="dateTo">
             </div>
-            <div class="detail-row">
-                <span>مبلغ:</span>
-                <span id="modalAmount"></span>
+            <div class="report-tabs">
+                <div class="report-tab active" data-period="daily">روزانه</div>
+                <div class="report-tab" data-period="weekly">هفتگی</div>
+                <div class="report-tab" data-period="monthly">ماهانه</div>
+                <div class="report-tab" data-period="custom">سفارشی</div>
             </div>
-            <div class="detail-row">
-                <span>دسته‌بندی:</span>
-                <span id="modalCategory"></span>
-            </div>
-            <div class="detail-row">
-                <span>توضیحات:</span>
-                <span id="modalDescription"></span>
-            </div>
-            <div class="modal-buttons">
-                <button class="btn-confirm" id="confirmBtn">✅ تأیید</button>
-                <button class="btn-edit" id="editBtn">✏️ ویرایش</button>
-                <button class="btn-cancel" id="cancelBtn">❌ لغو</button>
+            <div class="report-card"><div class="label">کل هزینه‌ها</div><div class="value expense" id="reportExpense">۰ تومان</div></div>
+            <div class="report-card"><div class="label">کل درآمدها</div><div class="value income" id="reportIncome">۰ تومان</div></div>
+            <div class="report-card"><div class="label">موجودی خالص</div><div class="value" id="reportBalance">۰ تومان</div></div>
+            <div class="report-card"><div class="label">میانگین هزینه روزانه</div><div class="value expense" id="reportAvg">۰ تومان</div></div>
+        </div>
+        <div class="card report-section">
+            <h3>📊 نمودار دسته‌بندی</h3>
+            <div id="categoryChart"></div>
+        </div>
+        <div class="card report-section">
+            <h3>🏆 پرهزینه‌ترین‌ها</h3>
+            <div id="topExpenses"></div>
+        </div>
+        <div class="card report-section">
+            <h3>📤 خروجی گرفتن</h3>
+            <div class="export-btns">
+                <button class="export-btn" onclick="exportCSV()">📄 CSV</button>
+                <button class="export-btn" onclick="exportJSON()">📋 JSON</button>
+                <button class="export-btn" onclick="printReport()">🖨️ چاپ</button>
             </div>
         </div>
     </div>
-    
-    <div class="success-message" id="successMessage">✅ تراکنش با موفقیت ثبت شد!</div>
-    
-    <script>
-        // ذخیره‌سازی داده‌ها
-        let transactions = JSON.parse(localStorage.getItem('transactions')) || [];
-        let currentType = 'expense';
-        let isRecording = false;
-        let recognition = null;
-        
-        // تنظیمات تشخیص صدا
-        function initSpeechRecognition() {
-            if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
-                const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-                recognition = new SpeechRecognition();
-                recognition.lang = 'fa-IR';
-                recognition.continuous = false;
-                recognition.interimResults = false;
-                recognition.maxAlternatives = 1;
-                
-                recognition.onstart = function() {
-                    console.log('Speech recognition started');
-                    updateVoiceStatus('🔴 در حال ضبط... صحبت کنید', true);
-                };
-                
-                recognition.onresult = function(event) {
-                    console.log('Speech recognition result:', event.results);
-                    const transcript = event.results[0][0].transcript;
-                    console.log('Transcript:', transcript);
-                    processVoiceInput(transcript);
-                    stopRecording();
-                };
-                
-                recognition.onerror = function(event) {
-                    console.error('Speech recognition error:', event.error);
-                    let errorMessage = 'خطا در تشخیص صدا';
-                    
-                    switch(event.error) {
-                        case 'no-speech':
-                            errorMessage = 'صدایی شنیده نشد. لطفاً دوباره تلاش کنید.';
-                            break;
-                        case 'audio-capture':
-                            errorMessage = 'خطا در دسترسی به میکروفون. لطفاً دسترسی را بررسی کنید.';
-                            break;
-                        case 'not-allowed':
-                            errorMessage = 'دسترسی به میکروفون رد شد. لطفاً در تنظیمات Safari اجازه دهید.';
-                            break;
-                        case 'network':
-                            requency = 'خطا در اتصال به اینترنت. لطفاً اتصال خود را بررسی کنید.';
-                            break;
-                        default:
-                            errorMessage = 'خطا در تشخیص صدا: ' + event.error;
-                    }
-                    
-                    alert(errorMessage);
-                    stopRecording();
-                };
-                
-                recognition.onend = function() {
-                    console.log('Speech recognition ended');
-                    stopRecording();
-                };
-                
-                return true;
-            } else {
-                console.warn('Speech recognition not supported');
-                alert('مرورگر شما از تشخیص صدا پشتیبانی نمی‌کند. لطفاً از Safari استفاده کنید.');
-                requency = false;
-            }
-        }
-        
-        // توابع اصلی
-        function saveTransactions() {
-            localStorage.setItem('transactions', JSON.stringify(transactions));
-            updateUI();
-        }
-        
-        function updateUI() {
-            // محاسبه موجودی
-            const income = transactions.filter(t => t.type === 'income').reduce((sum, t) => sum + t.amount, 0);
-            const expense = transactions.filter(t => t.type === 'expense').reduce((sum, t) => sum + t.amount, 0);
-            const balance = income - expense;
-            
-            document.getElementById('totalBalance').textContent = formatNumber(balance) + ' تومان';
-            document.getElementById('totalIncome').textContent = formatNumber(income);
-            document.getElementById('totalExpense').textContent = formatNumber(expense);
-            
-            // نمایش تراکنش‌ها
-            const container = document.getElementById('transactionsContainer');
-            requency = '';
-            
-            const recentTransactions = [...transactions].reverse().slice(0, 10);
-            
-            recentTransactions.forEach(transaction => {
-                const item = document.createElement('div');
-                item.className = 'transaction-item';
-                
-                const iconClass = transaction.type === 'income' ? 'income' : 'expense';
-                const icon = getCategoryIcon(transaction.category);
-                
-                item.innerHTML = `
-                    <div class="transaction-icon ${iconClass}">${icon}</div>
-                    <div class="transaction-details">
-                        requency = "${transaction.description || transaction.category}";
-                        <div class="category">${transaction.category} - ${transaction.date}</div>
-                    </div>
-                    <div class="transaction-amount ${iconClass}">
-                        ${transaction.type === 'income' ? '+' : '-'}${formatNumber(transaction.amount)}
-                    </div>
-                `;
-                
-                container.appendChild(item);
-            });
-        }
-        
-        function getCategoryIcon(category) {
-            const icons = {
-                'خوراک': '🍽️',
-                'حمل‌ونقل': '🚗',
-                'مسکن': '🏠',
-                'پوشاک': '👕',
-                'تفریح': '🎭',
-                'سلامت': '💊',
-                'آموزش': '📚',
-                'سایر': '📦',
-                'حقوق': '💼',
-                'فروش': '🏷️',
-                'هدیه': '🎁',
-                'سود': '📈'
-            };
-            return icons[category] || '📦';
-        }
-        
-        function formatNumber(num) {
-            return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
-        }
-        
-        function processVoiceInput(text) {
-            console.log('Processing voice input:', text);
-            
-            // استخراج مبلغ
-            const amountMatch = text.match(/(\d+)\s*(هزار|میلیون)?\s*(تومان|تومن|ریال)?/);
-            let amount = 0;
-            
-            if (amountMatch) {
-                amount = parseInt(amountMatch[1]);
-                if (amountMatch[2] === 'هزار') amount *= 1000;
-                if (amountMatch[2] === 'میلیون') amount *= 1000000;
-                if (amountMatch[3] === 'ریال') amount /= 10;
-            }
-            
-            // تشخیص نوع
-            const incomeKeywords = ['دریافت', 'گرفتم', 'حقوق', 'فروش', 'هدیه', 'پاداش', 'سود'];
-            const expenseKeywords = ['پرداخت', 'خرجم', 'دادم', 'خریدم', 'هزینه', 'خرج'];
-            
-            let type = 'expense';
-            if (incomeKeywords.some(keyword => text.includes(keyword))) {
-                type = 'income';
-            }
-            
-            // تشخیص دسته‌بندی
-            const categories = {
-                'خوراک': ['ناهار', 'شام', 'صبحانه', 'رستوران', 'غذا', 'خرید', 'میوه', 'سبزی', 'نان'],
-                'حمل‌ونقل': ['بنزین', 'تاکسی', 'اتوبوس', 'مترو', 'پارکینگ', 'کرایه', 'ماشین', 'اسنپ'],
-                'مسکن': ['اجاره', 'قبض', 'برق', 'آب', 'گاز', 'تلفن', 'اینترنت', 'تعمیر'],
-                'پوشاک': ['لباس', 'کفش', 'شلوار', 'پیراهن', 'جوراب', 'کیف'],
-                'تفریح': ['سینما', 'تئاتر', 'مسافرت', 'گردش', 'پارک', 'بازی'],
-                'سلامت': ['دارو', 'دکتر', 'بیمارستان', 'آزمایش', 'دندانپزشک'],
-                'آموزش': ['کتاب', 'کلاس', 'دوره', 'دانشگاه', 'مدرسه']
-            };
-            
-            let category = 'سایر';
-            for (const [cat, keywords] of Object.entries(categories)) {
-                if (keywords.some(keyword => text.includes(keyword))) {
-                    category = cat;
-                    break;
-                }
-            }
-            
-            // پر کردن فرم
-            document.getElementById('amount').value = amount;
-            document.getElementById('description').value = text;
-            
-            // تنظیم نوع
-            currentType = type;
-            document.querySelectorAll('.tab').forEach(tab => {
-                tab.classList.remove('active');
-                if (tab.dataset.type === type) {
-                    tab.classList.add('active');
-                }
-            });
-            
-            // تنظیم دسته‌بندی
-            document.getElementById('category').value = category;
-            
-            // نمایش مودال تأیید
-            showConfirmationModal();
-        }
-        
-        function showConfirmationModal() {
-            const amount = document.getElementById('amount').value;
-            const category = document.getElementById('category').value;
-            const description = document.getElementById('description').value;
-            
-            if (!amount) {
-                alert('لطفاً مبلغ را وارد کنید');
-                return;
-            }
-            
-            document.getElementById('modalType').textContent = currentType === 'income' ? '💰 درآمد' : '💸 هزینه';
-            document.getElementById('modalAmount').textContent = formatNumber(amount) + ' تومان';
-            document.getElementById('modalCategory').textContent = category;
-            document.getElementById('modalDescription').textContent = description || '-';
-            
-            document.getElementById('confirmationModal').style.display = 'flex';
-        }
-        
-        function hideConfirmationModal() {
-            document.getElementById('confirmationModal').style.display = 'none';
-        }
-        
-        function addTransaction() {
-            const amount = parseInt(document.getElementById('amount').value);
-            const category = document.getElementById('category').value;
-            const description = document.getElementById('description').value;
-            
-            if (!amount || amount <= 0) {
-                alert('لطفاً مبلغ معتبر وارد کنید');
-                return;
-            }
-            
-            const transaction = {
-                id: Date.now(),
-                type: currentType,
-                amount: amount,
-                category: category,
-                description: description,
-                date: new Date().toLocaleDateString('fa-IR')
-            };
-            
-            transactions.push(transaction);
-            saveTransactions();
-            
-            // پاک کردن فرم
-            document.getElementById('amount').value = '';
-            document.getElementById('description').value = '';
-            
-            // نمایش پیام موفقیت
-            showSuccessMessage();
-        }
-        
-        function showSuccessMessage() {
-            const message = document.getElementById('successMessage');
-            message.style.display = 'block';
-            setTimeout(() => {
-                message.style.display = 'none';
-            }, 2000);
-        }
-        
-        function updateVoiceStatus(text, recording) {
-            const status = document.getElementById('voiceStatus');
-            status.textContent = text;
-            status.classList.toggle('recording', recording);
-            
-            const btn = document.getElementById('voiceBtn');
-            btn.classList.toggle('recording', recording);
-            
-            if (recording) {
-                btn.innerHTML = '<span>🔴</span><span>در حال ضبط...</span>';
-            } else {
-                btn.innerHTML = '<span>🎤</span><span>ثبت با صدا</span>';
-            }
-        }
-        
-        function startRecording() {
-            if (!recognition) {
-                if (!initSpeechRecognition()) {
-                    return;
-                }
-            }
-            
-            try {
-                recognition.start();
-                isRecording = true;
-                updateVoiceStatus('🔴 در حال ضبط... صحبت کنید', true);
-            } catch (e) {
-                console.error('Error starting recognition:', e);
-                alert('خطا در شروع ضبط. لطفاً صفحه را رفرش کنید.');
-            }
-        }
-        
-        function stopRecording() {
-            isRecording = false;
-            updateVoiceStatus('برای شروع، دکمه میکروفون را بزنید', false);
-        }
-        
-        // رویدادها
-        document.querySelectorAll('.tab').forEach(tab => {
-            tab.addEventListener('click', function() {
-                document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-                this.classList.add('active');
-                currentType = this.dataset.type;
-                
-                // تغییر دسته‌بندی‌ها بر اساس نوع
-                const categorySelect = document.getElementById('category');
-                if (currentType === 'income') {
-                    categorySelect.innerHTML = `
-                        <option value="حقوق">💼 حقوق</option>
-                        <option value="فروش">🏷️ فروش</option>
-                        <option value="هدیه">🎁 هدیه</option>
-                        <option value="سود">📈 سود</option>
-                        <option value="سایر">📦 سایر</option>
-                    `;
-                } else {
-                    categorySelect.innerHTML = `
-                        <option value="خوراک">🍽️ خوراک</option>
-                        <option value="حمل‌ونقل">🚗 حمل‌ونقل</option>
-                        <option value="مسکن">🏠 مسکن</option>
-                        <option value="پوشاک">👕 پوشاک</option>
-                        <option value="تفریح">🎭 تفریح</option>
-                        <option value="سلامت">💊 سلامت</option>
-                        <option value="آموزش">📚 آموزش</option>
-                        <option value="سایر">📦 سایر</option>
-                    `;
-                }
-            });
-        });
-        
-        document.getElementById('voiceBtn').addEventListener('click', function() {
-            if (isRecording) {
-                recognition.stop();
-                stopRecording();
-            } else {
-                startRecording();
-            }
-        });
-        
-        document.getElementById('submitBtn').addEventListener('click', showConfirmationModal);
-        
-        document.getElementById('confirmBtn').addEventListener('click', function() {
-            hideConfirmationModal();
-            addTransaction();
-        });
-        
-        document.getElementById('editBtn').addEventListener('click', function() {
-            hideConfirmationModal();
-        });
-        
-        document.getElementById('cancelBtn').addEventListener('click', hideConfirmationModal);
-        
-        // بارگذاری اولیه
-        initSpeechRecognition();
-        updateUI();
-    </script>
-</body>
-</html>
+
+    <!-- صفحه تاریخچه -->
+    <div class="page" id="page-history">
+        <div class="card">
+            <h3 style="margin-bottom:16px;color:#374151">📋 تمام تراکنش‌ها</h3>
+            <div id="allTransactions"></div>
+        </div>
+    </div>
+</div>
+
+<div class="modal" id="confirmationModal">
+    <div class="modal-content">
+        <h3>📋 تأیید اطلاعات</h3>
+        <div class="detail-row"><span>نوع:</span><span id="modalType"></span></div>
+        <div class="detail-row"><span>مبلغ:</span><span id="modalAmount"></span></div>
+        <div class="detail-row"><span>دسته‌بندی:</span><span id="modalCategory"></span></div>
+        <div class="detail-row"><span>توضیحات:</span><span id="modalDescription"></span></div>
+        <div class="modal-buttons">
+            <button class="btn-confirm" id="confirmBtn">✅</button>
+            <button class="btn-edit" id="editBtn">✏️</button>
+            <button class="btn-cancel" id="cancelBtn">❌</button>
+        </div>
+    </div>
+</div>
+<div class="success-msg" id="successMsg">✅ ثبت شد!</div>
+
+<script>
+if('serviceWorker' in navigator)navigator.serviceWorker.register('./sw.js').catch(()=>{});
+
+let transactions=JSON.parse(localStorage.getItem('transactions'))||[];
+let currentType='expense',currentPeriod='daily',isRecording=false,recognition=null,speechSupported=false;
+
+function checkSpeech(){
+    if('webkitSpeechRecognition' in window||'SpeechRecognition' in window){
+        speechSupported=true;document.getElementById('permissionBtn').style.display='block';
+    }else{speechSupported=false;document.getElementById('voiceBtn').style.display='none';
+    document.getElementById('voiceStatus').textContent='⚠️ مرورگر از تشخیص صدا پشتیبانی نمی‌کند.'}
+}
+function initSpeech(){
+    if(!speechSupported)return false;
+    try{
+        const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+        recognition=new SR();recognition.lang='fa-IR';recognition.continuous=false;recognition.interimResults=false;
+        recognition.onstart=()=>{isRecording=true;updVoice('🔴 در حال ضبط...',true)};
+        recognition.onresult=e=>{processVoice(e.results[0][0].transcript);stopRec()};
+        recognition.onerror=e=>{alert('خطا: '+e.error);stopRec()};
+        recognition.onend=()=>stopRec();return true;
+    }catch(e){return false}
+}
+function save(){localStorage.setItem('transactions',JSON.stringify(transactions));updateUI()}
+function fmt(n){return n.toString().replace(/\B(?=(\d{3})+(?!\d))/g,",")}
+function icon(cat){
+    const m={'خوراک':'🍽️','حمل‌ونقل':'🚗','مسکن':'🏠','پوشاک':'👕','تفریح':'🎭','سلامت':'💊','آموزش':'📚','سایر':'📦','حقوق':'💼','فروش':'🏷️','هدیه':'🎁','سود':'📈'};
+    return m[cat]||'📦';
+}
+
+function updateUI(){
+    const inc=transactions.filter(t=>t.type==='income').reduce((s,t)=>s+t.amount,0);
+    const exp=transactions.filter(t=>t.type==='expense').reduce((s,t)=>s+t.amount,0);
+    document.getElementById('totalBalance').textContent=fmt(inc-exp)+' تومان';
+    document.getElementById('totalIncome').textContent=fmt(inc);
+    document.getElementById('totalExpense').textContent=fmt(exp);
+}
+
+function updateAllTransactions(){
+    const c=document.getElementById('allTransactions');
+    if(transactions.length===0){c.innerHTML='<p style="text-align:center;color:#9ca3af;padding:20px">تراکنشی ثبت نشده</p>';return}
+    c.innerHTML=[...transactions].reverse().map(t=>`
+        <div class="transaction-item">
+            <div class="transaction-icon ${t.type==='income'?'inc':'exp'}">${icon(t.category)}</div>
+            <div class="transaction-details">
+                <div class="title">${t.description||t.category}</div>
+                <div class="category">${t.category} - ${t.date}</div>
+            </div>
+            <div style="display:flex;align-items:center">
+                <button class="delete-btn" onclick="delTx(${t.id})">🗑️</button>
+                <div class="transaction-amount ${t.type}">${t.type==='income'?'+':'-'}${fmt(t.amount)}</div>
+            </div>
+        </div>`).join('');
+}
+function delTx(id){if(confirm('حذف شود؟')){transactions=transactions.filter(t=>t.id!==id);save();updateAllTransactions()}}
+
+// گزارش‌گیری
+function getFiltered(){
+    const now=new Date();let from,to;
+    if(currentPeriod==='daily'){from=new Date(now);from.setHours(0,0,0,0);to=new Date(now);to.setHours(23,59,59,999)}
+    else if(currentPeriod==='weekly'){from=new Date(now);from.setDate(now.getDate()-7);from.setHours(0,0,0,0);to=new Date(now)}
+    else if(currentPeriod==='monthly'){from=new Date(now.getFullYear(),now.getMonth(),1);to=new Date(now)}
+    else{
+        const df=document.getElementById('dateFrom').value,dt=document.getElementById('dateTo').value;
+        if(!df||!dt)return transactions;
+        from=new Date(df);to=new Date(dt);to.setHours(23,59,59,999);
+    }
+    return transactions.filter(t=>{const d=new Date(t.timestamp);return d>=from&&d<=to});
+}
+function updateReports(){
+    const filtered=getFiltered();
+    const inc=filtered.filter(t=>t.type==='income').reduce((s,t)=>s+t.amount,0);
+    const exp=filtered.filter(t=>t.type==='expense').reduce((s,t)=>s+t.amount,0);
+    const days=currentPeriod==='daily'?1:currentPeriod==='weekly'?7:currentPeriod==='monthly'?30:
+        Math.max(1,Math.ceil((new Date(document.getElementById('dateTo').value)-new Date(document.getElementById('dateFrom').value))/(86400000))+1);
+    document.getElementById('reportExpense').textContent=fmt(exp)+' تومان';
+    document.getElementById('reportIncome').textContent=fmt(inc)+' تومان';
+    document.getElementById('reportBalance').textContent=fmt(inc-exp)+' تومان';
+    document.getElementById('reportAvg').textContent=fmt(Math.round(exp/days))+' تومان';
+
+    // نمودار
+    const expenses=filtered.filter(t=>t.type==='expense');
+    const chart=document.getElementById('categoryChart');
+    if(expenses.length===0){chart.innerHTML='<p style="text-align:center;color:#9ca3af">بدون هزینه</p>';return}
+    const cats={};expenses.forEach(t=>cats[t.category]=(cats[t.category]||0)+t.amount);
+    const sorted=Object.entries(cats).sort((a,b)=>b[1]-a[1]);const max=sorted[0][1];
+    const colors=['#667eea','#764ba2','#f59e0b','#10b981','#ef4444','#3b82f6','#8b5cf6','#ec4899'];
+    chart.innerHTML=sorted.map(([c,a],i)=>`
+        <div class="chart-bar">
+            <div class="chart-label">${icon(c)} ${c}</div>
+            <div class="chart-bar-container"><div class="chart-bar-fill" style="width:${(a/max)*100}%;background:${colors[i%8]}"></div></div>
+            <div class="chart-value">${fmt(a)}</div>
+        </div>`).join('');
+
+    // top 5
+    const top=document.getElementById('topExpenses');
+    const top5=[...expenses].sort((a,b)=>b.amount-a.amount).slice(0,5);
+    top.innerHTML=top5.map((e,i)=>`
+        <div class="top-expense-item">
+            <div class="top-expense-rank">${i+1}</div>
+            <div class="top-expense-details"><div class="title">${e.description||e.category}</div><div class="cat">${e.category} - ${e.date}</div></div>
+            <div class="top-expense-amount">${fmt(e.amount)} ت</div>
+        </div>`).join('');
+}
+
+// اکسپورت
+function exportCSV(){
+    const filtered=getFiltered();
+    let csv='\uFEFFنوع,مبلغ,دسته‌بندی,توضیحات,تاریخ\n';
+    filtered.forEach(t=>csv+=`${t.type},${t.amount},${t.category},"${t.description||''}",${t.date}\n`);
+    download(csv,'transactions.csv','text/csv;charset=utf-8');
+}
+function exportJSON(){
+    download(JSON.stringify(getFiltered(),null,2),'transactions.json','application/json');
+}
+function download(data,name,type){
+    const b=new Blob([data],{type});const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download=name;a.click();
+}
+function printReport(){
+    const filtered=getFiltered();
+    const inc=filtered.filter(t=>t.type==='income').reduce((s,t)=>s+t.amount,0);
+    const exp=filtered.filter(t=>t.type==='expense').reduce((s,t)=>s+t.amount,0);
+    let html='<html dir="rtl"><head><meta charset="UTF-8"><title>گزارش</title><style>body{font-family:Tahoma;padding:20px}table{width:100%;border-collapse:collapse}th,td{border:1px solid #ddd;padding:8px;text-align:center}th{background:#667eea;color:white}.inc{color:green}.exp{color:red}</style></head><body>';
+    html+='<h1>📊 گزارش مالی</h1>';
+    html+=`<p>درآمد: <b class="inc">${fmt(inc)}</b> | هزینه: <b class="exp">${fmt(exp)}</b> | خالص: <b>${fmt(inc-exp)}</b> تومان</p>`;
+    html+='<table><tr><th>نوع</th><th>مبلغ</th><th>دسته</th><th>توضیحات</th><th>تاریخ</th></tr>';
+    filtered.forEach(t=>html+=`<tr><td>${t.type==='income'?'درآمد':'هزینه'}</td><td class="${t.type}">${fmt(t.amount)}</td><td>${t.category}</td><td>${t.description||'-'}</td><td>${t.date}</td></tr>`);
+    html+='</table></body></html>';
+    const w=window.open('');w.document.write(html);w.print();
+}
+
+function processVoice(text){
+    const m=text.match(/(\d+)/);let amt=m?parseInt(m[1]):0;
+    if(text.includes('هزار'))amt*=1000;if(text.includes('میلیون'))amt*=1000000;
+    const incW=['دریافت','گرفتم','حقوق','فروش','هدیه','سود'];
+    let type=incW.some(w=>text.includes(w))?'income':'expense';
+    const catMap={'خوراک':['ناهار','شام','صبحانه','غذا','رستوران'],'حمل‌ونقل':['بنزین','تاکسی','اسنپ','مترو'],'مسکن':['اجاره','قبض','برق','گاز'],'پوشاک':['لباس','کفش'],'تفریح':['سینما','مسافرت'],'سلامت':['دارو','دکتر'],'آموزش':['کتاب','کلاس']};
+    let cat='سایر';for(const[k,w]of Object.entries(catMap))if(w.some(w2=>text.includes(w2))){cat=k;break}
+    document.getElementById('amount').value=amt;document.getElementById('description').value=text;
+    currentType=type;document.querySelectorAll('.tab').forEach(t=>t.classList.toggle('active',t.dataset.type===type));
+    updateCatOptions();document.getElementById('category').value=cat;showModal();
+}
+function updateCatOptions(){
+    const s=document.getElementById('category');
+    if(currentType==='income')s.innerHTML='<option value="حقوق">💼 حقوق</option><option value="فروش">🏷️ فروش</option><option value="هدیه">🎁 هدیه</option><option value="سود">📈 سود</option><option value="سایر">📦 سایر</option>';
+    else s.innerHTML='<option value="خوراک">🍽️ خوراک</option><option value="حمل‌ونقل">🚗 حمل‌ونقل</option><option value="مسکن">🏠 مسکن</option><option value="پوشاک">👕 پوشاک</option><option value="تفریح">🎭 تفریح</option><option value="سلامت">💊 سلامت</option><option value="آموزش">📚 آموزش</option><option value="سایر">📦 سایر</option>';
+}
+function showModal(){
+    const amt=document.getElementById('amount').value;if(!amt){alert('مبلغ را وارد کنید');return}
+    document.getElementById('modalType').textContent=currentType==='income'?'💰 درآمد':'💸 هزینه';
+    document.getElementById('modalAmount').textContent=fmt(amt)+' تومان';
+    document.getElementById('modalCategory').textContent=document.getElementById('category').value;
+    document.getElementById('modalDescription').textContent=document.getElementById('description').value||'-';
+    document.getElementById('confirmationModal').style.display='flex';
+}
+function addTx(){
+    const amt=parseInt(document.getElementById('amount').value);if(!amt||amt<=0){alert('مبلغ معتبر وارد کنید');return}
+    transactions.push({id:Date.now(),type:currentType,amount:amt,category:document.getElementById('category').value,description:document.getElementById('description').value,date:new Date().toLocaleDateString('fa-IR'),timestamp:Date.now()});
+    save();document.getElementById('amount').value='';document.getElementById('description').value='';
+    const msg=document.getElementById('successMsg');msg.style.display='block';setTimeout(()=>msg.style.display='none',2000);
+}
+function updVoice(t,r){document.getElementById('voiceStatus').textContent=t;
+    document.getElementById('voiceBtn').classList.toggle('recording',r);
+    document.getElementById('voiceBtn').innerHTML=r?'<span>🔴</span><span>ضبط...</span>':'<span>🎤</span><span>ثبت با صدا</span>'}
+function stopRec(){isRecording=false;updVoice('برای شروع دکمه را بزنید',false)}
+
+// رویدادها
+document.querySelectorAll('.nav-tab').forEach(tab=>tab.addEventListener('click',function(){
+    document.querySelectorAll('.nav-tab').forEach(t=>t.classList.remove('active'));this.classList.add('active');
+    document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+    document.getElementById('page-'+this.dataset.page).classList.add('active');
+    if(this.dataset.page==='history')updateAllTransactions();if(this.dataset.page==='report')updateReports();
+}));
+document.querySelectorAll('.tab').forEach(tab=>tab.addEventListener('click',function(){
+    document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));this.classList.add('active');
+    currentType=this.dataset.type;updateCatOptions();
+}));
+document.querySelectorAll('.report-tab').forEach(tab=>tab.addEventListener('click',function(){
+    document.querySelectorAll('.report-tab').forEach(t=>t.classList.remove('active'));this.classList.add('active');
+    currentPeriod=this.dataset.period;
+    document.getElementById('dateFrom').parentElement.style.display=currentPeriod==='custom'?'flex':'none';
+    updateReports();
+}));
+document.getElementById('dateFrom').addEventListener('change',updateReports);
+document.getElementById('dateTo').addEventListener('change',updateReports);
+document.getElementById('permissionBtn').addEventListener('click',function(){if(!recognition&&!initSpeech())return;try{recognition.start();this.style.display='none'}catch(e){alert('خطا')}});
+document.getElementById('voiceBtn').addEventListener('click',function(){if(isRecording){if(recognition)recognition.stop();stopRec()}else{if(!recognition&&!initSpeech())return;try{recognition.start()}catch(e){alert('خطا')}}});
+document.getElementById('submitBtn').addEventListener('click',showModal);
+document.getElementById('confirmBtn').addEventListener('click',()=>{document.getElementById('confirmationModal').style.display='none';addTx()});
+document.getElementById('editBtn').addEventListener('click',()=>document.getElementById('confirmationModal').style.display='none');
+document.getElementById('cancelBtn').addEventListener('click',()=>document.getElementById('confirmationModal').style.display='none');
+
+checkSpeech();updateUI();
+</script>
