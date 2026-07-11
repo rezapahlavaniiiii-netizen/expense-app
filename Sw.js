@@ -1,4 +1,4 @@
-var CACHE_NAME = 'finance-pro-v1';
+var CACHE_NAME = 'finance-pro-v2';
 var urlsToCache = ['./', './index.html', './manifest.json'];
 
 self.addEventListener('install', function(event) {
